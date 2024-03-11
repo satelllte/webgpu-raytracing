@@ -3,7 +3,8 @@ import './globals.css';
 
 export const metadata: Metadata = {
   title: 'WebGPU raytracer',
-  description: 'WebGPU based raytracer, which follows "Ray Tracing in One Weekend" series',
+  description:
+    'WebGPU based raytracer, which follows "Ray Tracing in One Weekend" series',
 };
 
 export default function RootLayout({
