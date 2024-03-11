@@ -1,0 +1,39 @@
+{
+  "name": "webgpu-raytracing",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "serve out",
+    "test:lint": "next lint --max-warnings=0 --format=compact",
+    "test:format": "prettier . --check",
+    "format": "prettier . --write"
+  },
+  "dependencies": {
+    "next": "14.0.4",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "usehooks-ts": "2.9.1"
+  },
+  "devDependencies": {
+    "@types/node": "20.10.6",
+    "@types/react": "18.2.46",
+    "@types/react-dom": "18.2.18",
+    "@webgpu/types": "0.1.40",
+    "autoprefixer": "10.4.16",
+    "eslint": "8.56.0",
+    "eslint-config-next": "14.0.4",
+    "eslint-config-prettier": "9.1.0",
+    "eslint-config-xo": "0.43.1",
+    "eslint-config-xo-react": "0.27.0",
+    "eslint-config-xo-typescript": "1.0.1",
+    "eslint-plugin-tailwindcss": "3.13.1",
+    "postcss": "8.4.32",
+    "prettier": "3.1.1",
+    "prettier-plugin-tailwindcss": "0.5.10",
+    "serve": "14.2.1",
+    "tailwindcss": "3.4.0",
+    "typescript": "5.3.3"
+  }
+}
