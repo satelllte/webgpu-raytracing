@@ -57,6 +57,8 @@ struct RayHit {
 
 struct Material {
   diffuse_color: ColorRGB,
+  albedo: vec2f,
+  specular_exponent: f32,
 }
 
 struct Light {
@@ -75,8 +77,8 @@ struct SphereHit {
   hit: RayHit,
 }
 
-const material_red = Material(/* diffuse_color */ColorRGB(0.7, 0.1, 0.2));
-const material_blue = Material(/* diffuse_color */ColorRGB(0.2, 0.1, 0.8));
+const material_red = Material(/* diffuse_color */ColorRGB(0.7, 0.1, 0.2), /* albedo */vec2f(1.0, 1.0), /* specular_exponent */50.0);
+const material_blue = Material(/* diffuse_color */ColorRGB(0.2, 0.1, 0.8), /* albedo */vec2f(1.0, 0.6), /* specular_exponent */10.0);
 
 const lights_count = 1;
 const lights = array<Light, lights_count>(
@@ -103,15 +105,16 @@ fn trace_ray(
 
   let sphere = spheres[sphere_hit.index];
   let hit = sphere_hit.hit;
-
+  let material = sphere.material;
   var diffuse_light_intensity: f32 = 0.0;
+  var specular_light_intensity: f32 = 0.0;
   for (var i: i32 = 0; i < lights_count; i++) {
     let light = lights[i];
     let light_direction = normalize(light.position - hit.position);
     diffuse_light_intensity += light.intensity * max(0.0, dot(light_direction, hit.normal));
+    specular_light_intensity += pow(max(0.0, dot(reflect(light_direction, hit.normal), ray.direction)), material.specular_exponent) * light.intensity;
   }
-  
-  return sphere.material.diffuse_color * diffuse_light_intensity;
+  return material.diffuse_color * diffuse_light_intensity * material.albedo[0] + vec3f(1.0) * specular_light_intensity * material.albedo[1];
 }
 
 fn hit_spheres(spheres: array<Sphere, spheres_count>, ray: Ray) -> SphereHit
