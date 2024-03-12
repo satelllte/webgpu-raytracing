@@ -12,7 +12,7 @@ env:
   BUILD_DIRECTORY: out
 
 jobs:
-  ci-test-deploy:
+  ci:
     permissions:
       contents: read
       deployments: write
