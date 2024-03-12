@@ -77,6 +77,7 @@ struct SphereIntersection {
 }
 
 const material_red = Material(/* diffuse_color */ColorRGB(0.7, 0.1, 0.2));
+const material_blue = Material(/* diffuse_color */ColorRGB(0.2, 0.1, 0.8));
 
 const lights_count = 1;
 const lights = array<Light, lights_count>(
@@ -87,7 +88,7 @@ const spheres_count = 3;
 const spheres = array<Sphere, spheres_count>(
   Sphere(/* center */vec3f(0.0, 0.0, 0.0), /* radius */1.0, /* material */material_red),
   Sphere(/* center */vec3f(-1.25, 0.4, 1.0), /* radius */1.0, /* material */material_red),
-  Sphere(/* center */vec3f(-3.0, 2.0, 4.0), /* radius */2.0, /* material */material_red),
+  Sphere(/* center */vec3f(-3.0, 2.0, 4.0), /* radius */2.0, /* material */material_blue),
 );
 
 fn trace_ray(
