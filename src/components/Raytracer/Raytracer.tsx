@@ -147,7 +147,7 @@ const draw = ({
 
   passEncoder.setPipeline(renderPipeline);
   passEncoder.setVertexBuffer(0, verticesBuffer);
-  passEncoder.draw(6);
+  passEncoder.draw(vertices.length / 4);
   passEncoder.end();
 
   device.queue.submit([commandEncoder.finish()]);
