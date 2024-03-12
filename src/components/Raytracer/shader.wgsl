@@ -25,14 +25,14 @@ fn fragment_main(@builtin(position) position: vec4f) -> @location(0) ColorRGBA
   // let camera_field_of_view_degrees = 75.0;
   // let camera_field_of_view_radians = camera_field_of_view_degrees * PI / 180.0;
   let camera_focus_distance = 1.0;
-  let camera_origin = vec3f(0.0, 0.0, -5.0);
+  let camera_origin = vec3f(0.0, 0.0, 0.0);
   let ray = Ray(
     /* origin */camera_origin,
     /* direction */normalize(vec3f(
       uv,
       // (2.0 * (uv.x + 0.5) / width  - 1.0) * tan(camera_field_of_view_radians * 0.5) * aspect_ratio,
       // (2.0 * (uv.y + 0.5) / height - 1.0) * tan(camera_field_of_view_radians * 0.5),
-      camera_focus_distance,
+      -camera_focus_distance, // camera is looking into -z direction following a common right-handed coordinate system convention
     )),
   );
 
@@ -80,14 +80,14 @@ const material_blue = Material(/* diffuse_color */ColorRGB(0.2, 0.1, 0.8));
 
 const lights_count = 1;
 const lights = array<Light, lights_count>(
-  Light(/* position */vec3f(4.0, 2.0, -5.0), /* intensity */1.0),
+  Light(/* position */vec3f(4.0, 2.0, -3.0), /* intensity */1.0),
 );
 
 const spheres_count = 3;
 const spheres = array<Sphere, spheres_count>(
-  Sphere(/* center */vec3f(0.0, 0.0, 0.0), /* radius */1.0, /* material */material_red),
-  Sphere(/* center */vec3f(-1.25, 0.4, 1.0), /* radius */1.0, /* material */material_red),
-  Sphere(/* center */vec3f(-3.0, 2.0, 4.0), /* radius */2.0, /* material */material_blue),
+  Sphere(/* center */vec3f(0.0, 0.0, -6.0), /* radius */1.0, /* material */material_red),
+  Sphere(/* center */vec3f(-1.25, 0.4, -4.0), /* radius */1.0, /* material */material_red),
+  Sphere(/* center */vec3f(-3.0, 2.0, -5.0), /* radius */2.0, /* material */material_blue),
 );
 
 fn trace_ray(
