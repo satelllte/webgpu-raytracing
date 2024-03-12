@@ -1,2 +1,5 @@
 import {Raytracer} from '@/components/Raytracer';
-export default Raytracer;
+
+export default function () {
+  return <Raytracer />;
+}
