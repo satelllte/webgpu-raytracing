@@ -13,7 +13,7 @@ fn vertex_main(@location(0) position: vec4f) -> @builtin(position) vec4f
 }
 
 @fragment
-fn fragment_main(@builtin(position) position: vec4f) -> @location(0) vec4f
+fn fragment_main(@builtin(position) position: vec4f) -> @location(0) ColorRGBA
 {
   let width = f32(uniforms.width);
   let height = f32(uniforms.height);
@@ -36,23 +36,38 @@ fn fragment_main(@builtin(position) position: vec4f) -> @location(0) vec4f
     )),
   );
 
-  let sphere_1 = Sphere(vec3f(0.0, 0.0, 0.0), 1.0);
-  let sphere_2 = Sphere(vec3f(-4.0, 1.0, 2.0), 1.0);
+  let material_red = Material(ColorRGB(0.7, 0.1, 0.2));
 
-  if (intersect_sphere(sphere_1, ray)) { return color_sphere(); }
-  if (intersect_sphere(sphere_2, ray)) { return color_sphere(); }
+  let sphere_1 = Sphere(vec3f(0.0, 0.0, 0.0), 1.0, material_red);
+  let sphere_2 = Sphere(vec3f(-4.0, 1.0, 2.0), 1.0, material_red);
 
-  return color_sky(ray);
+  if (intersect_sphere(sphere_1, ray)) { return to_rgba(sphere_1.material.diffuse_color); }
+  if (intersect_sphere(sphere_2, ray)) { return to_rgba(sphere_2.material.diffuse_color); }
+
+  return to_rgba(color_sky(ray));
 }
+
+alias ColorRGB = vec3f;
+alias ColorRGBA = vec4f;
 
 struct Ray {
   origin: vec3f,
   direction: vec3f, // must be normalized
 }
 
+struct Material {
+  diffuse_color: ColorRGB,
+}
+
 struct Sphere {
   center: vec3f,
   radius: f32,
+  material: Material,
+}
+
+fn to_rgba(rgb: ColorRGB) -> ColorRGBA
+{
+  return ColorRGBA(rgb, 1.0);
 }
 
 fn intersect_sphere(sphere: Sphere, ray: Ray) -> bool
@@ -61,33 +76,22 @@ fn intersect_sphere(sphere: Sphere, ray: Ray) -> bool
   let a = dot(ray.direction, ray.direction);
   let b = dot(v, ray.direction);
   let c = dot(v, v) - sphere.radius * sphere.radius;
-
   let d = b * b - a * c;
-  if d < 0.0 {
-    return false;
-  }
+  if (d < 0.0) { return false; }
 
   let sqrt_d = sqrt(d);
   let recip_a = 1.0 / a;
   let mb = -b;
   let t1 = (mb - sqrt_d) * recip_a;
   let t2 = (mb + sqrt_d) * recip_a;
-  let t = select(t2, t1, t1 > 0.);
-  if t <= 0.0 {
-    return false;
-  }
+  let t = select(t2, t1, t1 > 0.0);
+  if (t <= 0.0) { return false; }
 
   return true;
 }
 
-fn color_sphere() -> vec4f
-{
-  return vec4f(0.9, 0.1, 0.3, 1.0);
-}
-
-
-fn color_sky(ray: Ray) -> vec4f
+fn color_sky(ray: Ray) -> ColorRGB
 {
   let t = 0.5 * (ray.direction.y + 1.0);
-  return (1.0 - t) * vec4f(0.0, 0.3, 0.4, 1.0) + t * vec4f(0.0, 0.01, 0.1, 1.0);
+  return (1.0 - t) * ColorRGB(0.0, 0.3, 0.4) + t * ColorRGB(0.0, 0.01, 0.1);
 }
