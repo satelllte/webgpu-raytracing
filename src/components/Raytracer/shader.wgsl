@@ -38,11 +38,17 @@ fn fragment_main(@builtin(position) position: vec4f) -> @location(0) ColorRGBA
 
   let material_red = Material(ColorRGB(0.7, 0.1, 0.2));
 
-  let sphere_1 = Sphere(vec3f(0.0, 0.0, 0.0), 1.0, material_red);
-  let sphere_2 = Sphere(vec3f(-4.0, 1.0, 2.0), 1.0, material_red);
-
-  if (intersect_sphere(sphere_1, ray)) { return to_rgba(sphere_1.material.diffuse_color); }
-  if (intersect_sphere(sphere_2, ray)) { return to_rgba(sphere_2.material.diffuse_color); }
+  const spheres_count = 2;
+  let spheres = array<Sphere, spheres_count>(
+    Sphere(vec3f(0.0, 0.0, 0.0), 1.0, material_red),
+    Sphere(vec3f(-4.0, 1.0, 2.0), 1.0, material_red),
+  );
+  
+  for (var i: i32 = 0; i < spheres_count; i++) {
+    if (intersect_sphere(spheres[i], ray)) {
+      return to_rgba(spheres[i].material.diffuse_color);
+    }
+  }
 
   return to_rgba(color_sky(ray));
 }
