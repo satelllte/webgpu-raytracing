@@ -36,13 +36,13 @@ fn fragment_main(@builtin(position) position: vec4f) -> @location(0) vec4f
     )),
   );
 
-  let sphere = Sphere(vec3f(0.0, 0.0, 0.0), 1.0);
+  let sphere_1 = Sphere(vec3f(0.0, 0.0, 0.0), 1.0);
+  let sphere_2 = Sphere(vec3f(-4.0, 1.0, 2.0), 1.0);
 
-  if (intersect_sphere(sphere, ray)) {
-    return vec4f(0.9, 0.1, 0.3, 1.0);
-  }
+  if (intersect_sphere(sphere_1, ray)) { return color_sphere(); }
+  if (intersect_sphere(sphere_2, ray)) { return color_sphere(); }
 
-  return sky_color(ray);
+  return color_sky(ray);
 }
 
 struct Ray {
@@ -80,7 +80,13 @@ fn intersect_sphere(sphere: Sphere, ray: Ray) -> bool
   return true;
 }
 
-fn sky_color(ray: Ray) -> vec4f
+fn color_sphere() -> vec4f
+{
+  return vec4f(0.9, 0.1, 0.3, 1.0);
+}
+
+
+fn color_sky(ray: Ray) -> vec4f
 {
   let t = 0.5 * (ray.direction.y + 1.0);
   return (1.0 - t) * vec4f(0.0, 0.3, 0.4, 1.0) + t * vec4f(0.0, 0.01, 0.1, 1.0);
