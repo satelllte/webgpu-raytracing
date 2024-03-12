@@ -25,14 +25,14 @@ fn fragment_main(@builtin(position) position: vec4f) -> @location(0) ColorRGBA
   // let camera_field_of_view_degrees = 75.0;
   // let camera_field_of_view_radians = camera_field_of_view_degrees * PI / 180.0;
   let camera_focus_distance = 1.0;
-  let camera_origin = vec3f(0.0, 0.0, -5.0);
+  let camera_origin = vec3f(0.0, 0.0, 0.0);
   let ray = Ray(
     /* origin */camera_origin,
     /* direction */normalize(vec3f(
       uv,
       // (2.0 * (uv.x + 0.5) / width  - 1.0) * tan(camera_field_of_view_radians * 0.5) * aspect_ratio,
       // (2.0 * (uv.y + 0.5) / height - 1.0) * tan(camera_field_of_view_radians * 0.5),
-      camera_focus_distance,
+      -camera_focus_distance, // camera is looking into -z direction following a common right-handed coordinate system convention
     )),
   );
 
@@ -57,6 +57,8 @@ struct RayHit {
 
 struct Material {
   diffuse_color: ColorRGB,
+  albedo: vec2f,
+  specular_exponent: f32,
 }
 
 struct Light {
@@ -75,19 +77,22 @@ struct SphereHit {
   hit: RayHit,
 }
 
-const material_red = Material(/* diffuse_color */ColorRGB(0.7, 0.1, 0.2));
-const material_blue = Material(/* diffuse_color */ColorRGB(0.2, 0.1, 0.8));
+const material_red = Material(/* diffuse_color */ColorRGB(0.7, 0.1, 0.2), /* albedo */vec2f(1.0, 0.7), /* specular_exponent */50.0);
+const material_blue = Material(/* diffuse_color */ColorRGB(0.2, 0.1, 0.8), /* albedo */vec2f(1.0, 0.2), /* specular_exponent */10.0);
+const material_pink = Material(/* diffuse_color */ColorRGB(0.9, 0.3, 0.8), /* albedo */vec2f(1.0, 0.9), /* specular_exponent */20.0);
 
-const lights_count = 1;
+const lights_count = 2;
 const lights = array<Light, lights_count>(
-  Light(/* position */vec3f(4.0, 2.0, -5.0), /* intensity */1.0),
+  Light(/* position */vec3f(4.0, 2.0, -3.0), /* intensity */1.0),
+  Light(/* position */vec3f(4.0, -2.0, 3.0), /* intensity */0.22),
 );
 
-const spheres_count = 3;
+const spheres_count = 4;
 const spheres = array<Sphere, spheres_count>(
-  Sphere(/* center */vec3f(0.0, 0.0, 0.0), /* radius */1.0, /* material */material_red),
-  Sphere(/* center */vec3f(-1.25, 0.4, 1.0), /* radius */1.0, /* material */material_red),
-  Sphere(/* center */vec3f(-3.0, 2.0, 4.0), /* radius */2.0, /* material */material_blue),
+  Sphere(/* center */vec3f(0.0, 0.0, -6.0), /* radius */1.0, /* material */material_red),
+  Sphere(/* center */vec3f(-1.25, 0.4, -4.0), /* radius */1.0, /* material */material_red),
+  Sphere(/* center */vec3f(-3.0, 2.0, -5.0), /* radius */2.0, /* material */material_blue),
+  Sphere(/* center */vec3f(3.0, 2.0, -5.0), /* radius */0.5, /* material */material_pink),
 );
 
 fn trace_ray(
@@ -103,14 +108,16 @@ fn trace_ray(
 
   let sphere = spheres[sphere_hit.index];
   let hit = sphere_hit.hit;
-
+  let material = sphere.material;
   var diffuse_light_intensity: f32 = 0.0;
+  var specular_light_intensity: f32 = 0.0;
   for (var i: i32 = 0; i < lights_count; i++) {
-    let light_direction = normalize(lights[i].position - hit.position);
-    diffuse_light_intensity += lights[i].intensity * max(0.0, dot(light_direction, hit.normal));
+    let light = lights[i];
+    let light_direction = normalize(light.position - hit.position);
+    diffuse_light_intensity += light.intensity * max(0.0, dot(light_direction, hit.normal));
+    specular_light_intensity += pow(max(0.0, dot(reflect(light_direction, hit.normal), ray.direction)), material.specular_exponent) * light.intensity;
   }
-  
-  return sphere.material.diffuse_color * diffuse_light_intensity;
+  return material.diffuse_color * diffuse_light_intensity * material.albedo[0] + vec3f(1.0) * specular_light_intensity * material.albedo[1];
 }
 
 fn hit_spheres(spheres: array<Sphere, spheres_count>, ray: Ray) -> SphereHit
