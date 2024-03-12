@@ -79,17 +79,20 @@ struct SphereHit {
 
 const material_red = Material(/* diffuse_color */ColorRGB(0.7, 0.1, 0.2), /* albedo */vec2f(1.0, 0.7), /* specular_exponent */50.0);
 const material_blue = Material(/* diffuse_color */ColorRGB(0.2, 0.1, 0.8), /* albedo */vec2f(1.0, 0.2), /* specular_exponent */10.0);
+const material_pink = Material(/* diffuse_color */ColorRGB(0.9, 0.3, 0.8), /* albedo */vec2f(1.0, 0.9), /* specular_exponent */20.0);
 
-const lights_count = 1;
+const lights_count = 2;
 const lights = array<Light, lights_count>(
   Light(/* position */vec3f(4.0, 2.0, -3.0), /* intensity */1.0),
+  Light(/* position */vec3f(4.0, -2.0, 3.0), /* intensity */0.22),
 );
 
-const spheres_count = 3;
+const spheres_count = 4;
 const spheres = array<Sphere, spheres_count>(
   Sphere(/* center */vec3f(0.0, 0.0, -6.0), /* radius */1.0, /* material */material_red),
   Sphere(/* center */vec3f(-1.25, 0.4, -4.0), /* radius */1.0, /* material */material_red),
   Sphere(/* center */vec3f(-3.0, 2.0, -5.0), /* radius */2.0, /* material */material_blue),
+  Sphere(/* center */vec3f(3.0, 2.0, -5.0), /* radius */0.5, /* material */material_pink),
 );
 
 fn trace_ray(
