@@ -49,10 +49,10 @@ struct Ray {
   direction: vec3f, // must be normalized
 }
 
-struct Intersection {
+struct RayHit {
   position: vec3f,
   normal: vec3f,
-  t: f32, // no intersection when less than 0
+  t: f32, // no hit when less than 0
 }
 
 struct Material {
@@ -70,9 +70,9 @@ struct Sphere {
   material: Material,
 }
 
-struct SphereIntersection {
-  sphere_index: i32,
-  intersection: Intersection,
+struct SphereHit {
+  index: i32,
+  hit: RayHit,
 }
 
 const material_red = Material(/* diffuse_color */ColorRGB(0.7, 0.1, 0.2));
@@ -96,49 +96,46 @@ fn trace_ray(
   spheres: array<Sphere, spheres_count>,
 ) -> ColorRGB
 {
-  let sphere_intersection = intersect_spheres(spheres, ray);
-  if (sphere_intersection.sphere_index < 0) {
+  let sphere_hit = hit_spheres(spheres, ray);
+  if (sphere_hit.index < 0) {
     return color_sky(ray);
   }
 
-  let sphere = spheres[sphere_intersection.sphere_index];
-  let intersection = sphere_intersection.intersection;
+  let sphere = spheres[sphere_hit.index];
+  let hit = sphere_hit.hit;
 
   var diffuse_light_intensity: f32 = 0.0;
   for (var i: i32 = 0; i < lights_count; i++) {
-    let light_direction = normalize(lights[i].position - intersection.position);
-    diffuse_light_intensity += lights[i].intensity * max(0.0, dot(light_direction, intersection.normal));
+    let light_direction = normalize(lights[i].position - hit.position);
+    diffuse_light_intensity += lights[i].intensity * max(0.0, dot(light_direction, hit.normal));
   }
   
   return sphere.material.diffuse_color * diffuse_light_intensity;
 }
 
-fn intersect_spheres(spheres: array<Sphere, spheres_count>, ray: Ray) -> SphereIntersection
+fn hit_spheres(spheres: array<Sphere, spheres_count>, ray: Ray) -> SphereHit
 {
-  var closest_hit = SphereIntersection(
-    /* sphere_index */-1,
-    /* intersection */no_intersection(),
-  );
+  var sphere_hit = SphereHit(/* index */-1, /* hit */no_hit());
 
   for (var i: i32 = 0; i < spheres_count; i++) {
     let sphere = spheres[i];
-    let intersection = intersect_sphere(sphere, ray);
-    if (intersection.t > 0.0 && (intersection.t < closest_hit.intersection.t || closest_hit.sphere_index < 0)) {
-      closest_hit = SphereIntersection(i, intersection);
+    let hit = hit_sphere(sphere, ray);
+    if (hit.t > 0.0 && (hit.t < sphere_hit.hit.t || sphere_hit.index < 0)) {
+      sphere_hit = SphereHit(i, hit);
     }
   }
 
-  return closest_hit;
+  return sphere_hit;
 }
 
-fn intersect_sphere(sphere: Sphere, ray: Ray) -> Intersection
+fn hit_sphere(sphere: Sphere, ray: Ray) -> RayHit
 {
   let v = ray.origin - sphere.center;
   let a = dot(ray.direction, ray.direction);
   let b = dot(v, ray.direction);
   let c = dot(v, v) - sphere.radius * sphere.radius;
   let d = b * b - a * c;
-  if (d < 0.0) { return no_intersection(); }
+  if (d < 0.0) { return no_hit(); }
 
   let sqrt_d = sqrt(d);
   let recip_a = 1.0 / a;
@@ -146,15 +143,15 @@ fn intersect_sphere(sphere: Sphere, ray: Ray) -> Intersection
   let t1 = (mb - sqrt_d) * recip_a;
   let t2 = (mb + sqrt_d) * recip_a;
   let t = select(t2, t1, t1 > 0.0);
-  if (t <= 0.0) { return no_intersection(); }
+  if (t <= 0.0) { return no_hit(); }
 
   let position = ray_position(ray, t);
   let normal = normalize((position - sphere.center) / sphere.radius);
-  return Intersection(position, normal, t);
+  return RayHit(position, normal, t);
 }
 
-fn no_intersection() -> Intersection {
-  return Intersection(/* position */vec3f(0.0), /* normal */vec3f(0.0), /* t */-1.0);
+fn no_hit() -> RayHit {
+  return RayHit(/* position */vec3f(0.0), /* normal */vec3f(0.0), /* t */-1.0);
 }
 
 fn ray_position(ray: Ray, t: f32) -> vec3f {
