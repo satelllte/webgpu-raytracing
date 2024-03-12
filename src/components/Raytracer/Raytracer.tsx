@@ -90,7 +90,7 @@ const draw = ({
 
   // prettier-ignore
   const vertices = new Float32Array([
-    // Position<vec4f> (XYZW)
+    /// position<vec4f> (xyzw)
     -1.0,  1.0, 0.0, 1.0,
     -1.0, -1.0, 0.0, 1.0,
      1.0,  1.0, 0.0, 1.0,
@@ -100,15 +100,29 @@ const draw = ({
   ]);
 
   const verticesBuffer = device.createBuffer({
+    label: 'vertices buffer',
     size: vertices.byteLength,
     usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST, // eslint-disable-line no-bitwise
   });
 
-  device.queue.writeBuffer(verticesBuffer, 0, vertices, 0, vertices.length);
+  const uniforms = new Int32Array([
+    context.canvas.width, /// width: u32
+    context.canvas.height, /// height: u32
+  ]);
 
-  const shaderModule = device.createShaderModule({code: shaderWgsl});
+  const uniformsBuffer = device.createBuffer({
+    label: 'uniforms buffer',
+    size: uniforms.byteLength,
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST, // eslint-disable-line no-bitwise
+  });
+
+  const shaderModule = device.createShaderModule({
+    label: 'shader module',
+    code: shaderWgsl,
+  });
 
   const renderPipeline = device.createRenderPipeline({
+    label: 'render pipeline',
     layout: 'auto',
     primitive: {topology: 'triangle-list'},
     vertex: {
@@ -133,8 +147,17 @@ const draw = ({
     },
   });
 
-  const commandEncoder = device.createCommandEncoder();
+  const uniformsBindGroup = device.createBindGroup({
+    label: 'uniforms bind group',
+    layout: renderPipeline.getBindGroupLayout(0),
+    entries: [{binding: 0, resource: {buffer: uniformsBuffer}}],
+  });
+
+  const commandEncoder = device.createCommandEncoder({
+    label: 'command encoder',
+  });
   const passEncoder = commandEncoder.beginRenderPass({
+    label: 'pass encoder',
     colorAttachments: [
       {
         clearValue: [0.0, 0.0, 0.0, 1.0],
@@ -146,9 +169,13 @@ const draw = ({
   });
 
   passEncoder.setPipeline(renderPipeline);
+  passEncoder.setBindGroup(0, uniformsBindGroup);
   passEncoder.setVertexBuffer(0, verticesBuffer);
   passEncoder.draw(vertices.length / 4);
   passEncoder.end();
+
+  device.queue.writeBuffer(verticesBuffer, 0, vertices);
+  device.queue.writeBuffer(uniformsBuffer, 0, uniforms);
 
   device.queue.submit([commandEncoder.finish()]);
 };
