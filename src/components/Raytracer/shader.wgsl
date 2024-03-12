@@ -1,4 +1,3 @@
-const F32_MAX: f32 = 3.40282346638528859812e+38;
 // const PI = 3.14159265358979;
 
 struct Uniforms {
@@ -118,29 +117,18 @@ fn intersect_spheres(spheres: array<Sphere, spheres_count>, ray: Ray) -> SphereI
 {
   var closest_hit = SphereIntersection(
     /* sphere_index */-1,
-    /* intersection */Intersection(
-      /* position */vec3f(0.0),
-      /* normal */vec3f(0.0),
-      /* t */F32_MAX,
-    ),
+    /* intersection */no_intersection(),
   );
 
   for (var i: i32 = 0; i < spheres_count; i++) {
     let sphere = spheres[i];
     let intersection = intersect_sphere(sphere, ray);
-    if (intersection.t > 0.0 && intersection.t < closest_hit.intersection.t) {
+    if (intersection.t > 0.0 && (intersection.t < closest_hit.intersection.t || closest_hit.sphere_index < 0)) {
       closest_hit = SphereIntersection(i, intersection);
     }
   }
 
-  if (closest_hit.sphere_index >= 0) {
-    return closest_hit;
-  }
-
-  return SphereIntersection(
-    /* sphere_index */-1,
-    /* intersection */no_intersection(),
-  );
+  return closest_hit;
 }
 
 fn intersect_sphere(sphere: Sphere, ray: Ray) -> Intersection
