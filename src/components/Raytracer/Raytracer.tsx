@@ -49,7 +49,11 @@ export function Raytracer() {
 
     const device = await adapter.requestDevice();
 
+    const start = performance.now();
     draw({gpu, context, device});
+
+    const diff = performance.now() - start;
+    console.info('render time (ms): ', diff);
   };
 
   return (
