@@ -54,10 +54,13 @@ export function PlaygroundCanvas() {
 
       // prettier-ignore
       const vertices = new Float32Array([
-        // Position<vec4f> (XYZW) + Color<vec4f> (RGBA)
-         0.0,  0.0, 0.0, 1.0, 0.4, 0.2, 0.7, 1.0,
-        -1.0, -1.0, 0.0, 1.0, 0.2, 0.0, 0.4, 1.0,
-         1.0, -0.5, 0.0, 1.0, 0.0, 0.4, 0.4, 1.0,
+        // Position<vec4f> (XYZW)
+        -1.0,  1.0, 0.0, 1.0,
+        -1.0, -1.0, 0.0, 1.0,
+         1.0,  1.0, 0.0, 1.0,
+         1.0,  1.0, 0.0, 1.0,
+        -1.0, -1.0, 0.0, 1.0,
+         1.0, -1.0, 0.0, 1.0,
       ]);
 
       const verticesBuffer = device.createBuffer({
@@ -75,11 +78,10 @@ export function PlaygroundCanvas() {
           entryPoint: 'vertex_main',
           buffers: [
             {
-              arrayStride: 32,
+              arrayStride: 16,
               stepMode: 'vertex',
               attributes: [
                 {shaderLocation: 0, offset: 0, format: 'float32x4'}, // Position
-                {shaderLocation: 1, offset: 16, format: 'float32x4'}, // Color
               ],
             },
           ] as const satisfies Iterable<GPUVertexBufferLayout>,
@@ -107,7 +109,7 @@ export function PlaygroundCanvas() {
 
       passEncoder.setPipeline(renderPipeline);
       passEncoder.setVertexBuffer(0, verticesBuffer);
-      passEncoder.draw(3);
+      passEncoder.draw(6);
       passEncoder.end();
 
       device.queue.submit([commandEncoder.finish()]);

@@ -1,19 +1,21 @@
 struct VertexOut {
   @builtin(position) position : vec4f,
-  @location(0) color : vec4f
 }
 
+// TODO: pass canvas dimensions as uniforms instead of hardcode
+const WIDTH = 1744;
+const HEIGHT = 1716;
+
 @vertex
-fn vertex_main(@location(0) position: vec4f, @location(1) color: vec4f) -> VertexOut
+fn vertex_main(@location(0) position: vec4f) -> VertexOut
 {
   var output : VertexOut;
   output.position = position;
-  output.color = color;
   return output;
 }
 
 @fragment
-fn fragment_main(fragData: VertexOut) -> @location(0) vec4f
+fn fragment_main(vertexData: VertexOut) -> @location(0) vec4f
 {
-  return fragData.color;
+  return vec4f(vertexData.position.xy / vec2f(WIDTH, HEIGHT), 0.0, 1);
 }
