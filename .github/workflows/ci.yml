@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+env:
+  BUILD_DIRECTORY: out
+
+jobs:
+  ci-test-deploy:
+    permissions:
+      contents: read
+      deployments: write
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v1
+      - name: Bun version
+        run: bun --version
+      - name: Node version
+        run: node --version
+      - name: Install Bun dependencies
+        run: bun install --frozen-lockfile
+      - name: Test (lint)
+        run: bun run test:lint
+      - name: Test (formatting)
+        run: bun run test:format
+      - name: Build
+        run: bun run build
+      - name: Upload static output artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: build
+          path: ./${{env.BUILD_DIRECTORY}}
