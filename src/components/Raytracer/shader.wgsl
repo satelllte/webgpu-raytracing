@@ -27,8 +27,8 @@ fn fragment_main(@builtin(position) position: vec4f) -> @location(0) ColorRGBA
   let camera_focus_distance = 1.0;
   let camera_origin = vec3f(0.0, 0.0, -5.0);
   let ray = Ray(
-    camera_origin,
-    normalize(vec3f(
+    /* origin */camera_origin,
+    /* direction */normalize(vec3f(
       uv,
       // (2.0 * (uv.x + 0.5) / width  - 1.0) * tan(camera_field_of_view_radians * 0.5) * aspect_ratio,
       // (2.0 * (uv.y + 0.5) / height - 1.0) * tan(camera_field_of_view_radians * 0.5),
@@ -36,7 +36,7 @@ fn fragment_main(@builtin(position) position: vec4f) -> @location(0) ColorRGBA
     )),
   );
 
-  let rgb = trace_ray(ray, spheres);
+  let rgb = trace_ray(ray, lights, spheres);
 
   return ColorRGBA(rgb, 1.0);
 }
@@ -53,13 +53,23 @@ struct Material {
   diffuse_color: ColorRGB,
 }
 
+struct Light {
+  origin: vec3f,
+  intensity: f32,
+}
+
 struct Sphere {
   center: vec3f,
   radius: f32,
   material: Material,
 }
 
-const material_red = Material(ColorRGB(0.7, 0.1, 0.2));
+const material_red = Material(/* diffuse_color */ColorRGB(0.7, 0.1, 0.2));
+
+const lights_count = 1;
+const lights = array<Light, lights_count>(
+  Light(/* origin */vec3f(0.0, 0.0, 0.0), /* intensity */1.5),
+);
 
 const spheres_count = 2;
 const spheres = array<Sphere, spheres_count>(
@@ -67,15 +77,29 @@ const spheres = array<Sphere, spheres_count>(
   Sphere(/* center */vec3f(-4.0, 1.0, 2.0), /* radius */1.0, /* material */material_red),
 );
 
-fn trace_ray(ray: Ray, spheres: array<Sphere, spheres_count>) -> ColorRGB
+fn trace_ray(
+  ray: Ray,
+  lights: array<Light, lights_count>,
+  spheres: array<Sphere, spheres_count>,
+) -> ColorRGB
+{
+  let sphere_index = intersect_spheres(spheres, ray);
+  if (sphere_index == -1) {
+    return color_sky(ray);
+  }
+  
+  return spheres[sphere_index].material.diffuse_color;
+}
+
+fn intersect_spheres(spheres: array<Sphere, spheres_count>, ray: Ray) -> i32
 {
   for (var i: i32 = 0; i < spheres_count; i++) {
     if (intersect_sphere(spheres[i], ray)) {
-      return spheres[i].material.diffuse_color;
+      return i;
     }
   }
 
-  return color_sky(ray);
+  return -1;
 }
 
 fn intersect_sphere(sphere: Sphere, ray: Ray) -> bool
