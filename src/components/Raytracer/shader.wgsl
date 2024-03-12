@@ -36,21 +36,9 @@ fn fragment_main(@builtin(position) position: vec4f) -> @location(0) ColorRGBA
     )),
   );
 
-  let material_red = Material(ColorRGB(0.7, 0.1, 0.2));
+  let rgb = trace_ray(ray, spheres);
 
-  const spheres_count = 2;
-  let spheres = array<Sphere, spheres_count>(
-    Sphere(vec3f(0.0, 0.0, 0.0), 1.0, material_red),
-    Sphere(vec3f(-4.0, 1.0, 2.0), 1.0, material_red),
-  );
-  
-  for (var i: i32 = 0; i < spheres_count; i++) {
-    if (intersect_sphere(spheres[i], ray)) {
-      return to_rgba(spheres[i].material.diffuse_color);
-    }
-  }
-
-  return to_rgba(color_sky(ray));
+  return ColorRGBA(rgb, 1.0);
 }
 
 alias ColorRGB = vec3f;
@@ -71,9 +59,23 @@ struct Sphere {
   material: Material,
 }
 
-fn to_rgba(rgb: ColorRGB) -> ColorRGBA
+const material_red = Material(ColorRGB(0.7, 0.1, 0.2));
+
+const spheres_count = 2;
+const spheres = array<Sphere, spheres_count>(
+  Sphere(/* center */vec3f(0.0, 0.0, 0.0), /* radius */1.0, /* material */material_red),
+  Sphere(/* center */vec3f(-4.0, 1.0, 2.0), /* radius */1.0, /* material */material_red),
+);
+
+fn trace_ray(ray: Ray, spheres: array<Sphere, spheres_count>) -> ColorRGB
 {
-  return ColorRGBA(rgb, 1.0);
+  for (var i: i32 = 0; i < spheres_count; i++) {
+    if (intersect_sphere(spheres[i], ray)) {
+      return spheres[i].material.diffuse_color;
+    }
+  }
+
+  return color_sky(ray);
 }
 
 fn intersect_sphere(sphere: Sphere, ray: Ray) -> bool
