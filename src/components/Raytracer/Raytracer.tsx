@@ -80,15 +80,13 @@ const draw = ({
   context: GPUCanvasContext;
   device: GPUDevice;
 }): void => {
-  const gpuPreferredCanvasFormat = gpu.getPreferredCanvasFormat();
+  const preferredCanvasFormat = gpu.getPreferredCanvasFormat();
 
   context.configure({
     device,
-    format: gpuPreferredCanvasFormat,
+    format: preferredCanvasFormat,
     alphaMode: 'premultiplied',
   });
-
-  const shaderModule = device.createShaderModule({code: shaderWgsl});
 
   // prettier-ignore
   const vertices = new Float32Array([
@@ -107,6 +105,8 @@ const draw = ({
   });
 
   device.queue.writeBuffer(verticesBuffer, 0, vertices, 0, vertices.length);
+
+  const shaderModule = device.createShaderModule({code: shaderWgsl});
 
   const renderPipeline = device.createRenderPipeline({
     layout: 'auto',
@@ -128,7 +128,7 @@ const draw = ({
       module: shaderModule,
       entryPoint: 'fragment_main',
       targets: [
-        {format: gpuPreferredCanvasFormat},
+        {format: preferredCanvasFormat},
       ] as const satisfies Iterable<GPUColorTargetState>,
     },
   });
