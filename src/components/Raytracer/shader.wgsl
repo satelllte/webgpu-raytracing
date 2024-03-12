@@ -36,14 +36,16 @@ fn fragment_main(@builtin(position) position: vec4f) -> @location(0) vec4f
     )),
   );
 
-  return vec4f(
-    ray.direction.xy,
-    0.0,
-    1.0,
-  );
+  return sky_color(ray);
 }
 
 struct Ray {
   origin: vec3f,
-  direction: vec3f,
+  direction: vec3f, // must be normalized
+}
+
+fn sky_color(ray: Ray) -> vec4f
+{
+  let t = 0.5 * (ray.direction.y + 1.0);
+  return (1.0 - t) * vec4f(0.0, 0.3, 0.4, 1.0) + t * vec4f(0.0, 0.01, 0.1, 1.0);
 }
