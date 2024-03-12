@@ -3,7 +3,7 @@ import {useEffect, useRef} from 'react';
 import {useWindowSize} from 'usehooks-ts';
 import shaderWgsl from './shader.wgsl';
 
-export function PlaygroundCanvas() {
+export function Raytracer() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const {width, height} = useWindowSize();
@@ -12,7 +12,7 @@ export function PlaygroundCanvas() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const scale = Math.max(devicePixelRatio, 1);
+    const scale = Math.max(window.devicePixelRatio, 1);
     canvas.width = Math.floor(width * scale);
     canvas.height = Math.floor(height * scale);
   }, [width, height]);
