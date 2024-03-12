@@ -106,8 +106,9 @@ fn trace_ray(
 
   var diffuse_light_intensity: f32 = 0.0;
   for (var i: i32 = 0; i < lights_count; i++) {
-    let light_direction = normalize(lights[i].position - hit.position);
-    diffuse_light_intensity += lights[i].intensity * max(0.0, dot(light_direction, hit.normal));
+    let light = lights[i];
+    let light_direction = normalize(light.position - hit.position);
+    diffuse_light_intensity += light.intensity * max(0.0, dot(light_direction, hit.normal));
   }
   
   return sphere.material.diffuse_color * diffuse_light_intensity;
