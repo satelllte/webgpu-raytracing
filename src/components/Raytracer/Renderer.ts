@@ -52,14 +52,14 @@ export class Renderer {
 
     // prettier-ignore
     const vertices = new Float32Array([
-    /// position<vec4f> (xyzw)
-    -1.0,  1.0, 0.0, 1.0,
-    -1.0, -1.0, 0.0, 1.0,
-     1.0,  1.0, 0.0, 1.0,
-     1.0,  1.0, 0.0, 1.0,
-    -1.0, -1.0, 0.0, 1.0,
-     1.0, -1.0, 0.0, 1.0,
-  ]);
+      /// position<vec4f> (xyzw)
+      -1.0,  1.0, 0.0, 1.0,
+      -1.0, -1.0, 0.0, 1.0,
+      1.0,  1.0, 0.0, 1.0,
+      1.0,  1.0, 0.0, 1.0,
+      -1.0, -1.0, 0.0, 1.0,
+      1.0, -1.0, 0.0, 1.0,
+    ]);
 
     const verticesBuffer = device.createBuffer({
       label: 'vertices buffer',
