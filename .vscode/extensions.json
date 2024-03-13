@@ -3,7 +3,8 @@
     "dbaeumer.vscode-eslint",
     "esbenp.prettier-vscode",
     "bradlc.vscode-tailwindcss",
-    "EditorConfig.EditorConfig"
+    "EditorConfig.EditorConfig",
+    "PolyMeilex.wgsl"
   ],
   "unwantedRecommendations": []
 }
