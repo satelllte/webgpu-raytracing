@@ -5,7 +5,7 @@ struct Uniforms {
   height: f32,
 }
 @group(0) @binding(0) var<uniform> uniforms: Uniforms;
-@group(0) @binding(1) var<uniform> uniform_ray: Ray;
+@group(0) @binding(1) var<storage> uniform_rays: array<Ray>;
 
 @vertex
 fn vertex_main(@location(0) position: vec4f) -> @builtin(position) vec4f
@@ -20,7 +20,8 @@ fn fragment_main(@builtin(position) position: vec4f) -> @location(0) ColorRGBA
   let height = uniforms.height;
   let uv = position.xy / vec2f(width, height);
   // return ColorRGBA(uv, 0.0, 1.0);
-  return ColorRGBA(uniform_ray.direction, 1.0);
+  let uniform_rays_count = arrayLength(&uniform_rays);
+  return ColorRGBA(vec3f(f32(uniform_rays_count) * 0.1), 1.0);
 
   // let rays_count = arrayLength(&rays);
   // return ColorRGBA(ColorRGB(f32(rays_count) + 0.1), 1.0);
