@@ -1,5 +1,5 @@
 'use client';
-import {useRef} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {useWebGPUSupport} from './useWebGPUSupport';
 import {Button} from './Button';
 import {Canvas} from './Canvas';
@@ -11,35 +11,60 @@ export function Raytracer() {
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  const render = async () => {
+  const [running, setRunning] = useState<boolean>(false);
+  const animationFrameIdRef = useRef<number | undefined>();
+
+  const lastFrameTimeMsRef = useRef<number | undefined>();
+  const [lastFrameTimeMs, setLastFrameTimeMs] = useState<number | undefined>();
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setLastFrameTimeMs(lastFrameTimeMsRef.current);
+    }, 200);
+
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, []);
+
+  const run = async () => {
+    if (running) return;
+    setRunning(true);
+
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas) throw new Error('Canvas ref is not set');
 
     const {gpu} = navigator;
-    if (!gpu) {
-      showAlert('WebGPU is not supported in this browser');
-      return;
-    }
+    if (!gpu) throw new Error('WebGPU is not supported in this browser');
 
     const context = canvas.getContext('webgpu');
-    if (!context) {
-      showAlert('Failed to get WebGPU context');
-      return;
-    }
+    if (!context) throw new Error('Failed to get WebGPU context');
 
     const adapter = await gpu.requestAdapter();
-    if (!adapter) {
-      showAlert('Failed to request WebGPU adapter');
-      return;
-    }
+    if (!adapter) throw new Error('Failed to request WebGPU adapter');
 
     const device = await adapter.requestDevice();
 
-    const start = performance.now();
-    draw({gpu, context, device});
+    let prevTime = performance.now();
+    const drawLoop: FrameRequestCallback = (time) => {
+      lastFrameTimeMsRef.current = time - prevTime;
+      prevTime = time;
 
-    const diff = performance.now() - start;
-    console.info('render time (ms): ', diff);
+      animationFrameIdRef.current = requestAnimationFrame(drawLoop);
+      draw({gpu, context, device});
+    };
+
+    animationFrameIdRef.current = requestAnimationFrame(drawLoop);
+  };
+
+  const stop = () => {
+    if (!running) return;
+    setRunning(false);
+
+    if (!animationFrameIdRef.current) return;
+    cancelAnimationFrame(animationFrameIdRef.current);
+    animationFrameIdRef.current = undefined;
+    lastFrameTimeMsRef.current = undefined;
   };
 
   return (
@@ -48,8 +73,13 @@ export function Raytracer() {
         <div className='flex flex-1 flex-col gap-2'>
           <h1 className='text-2xl underline'>WebGPU raytracer</h1>
           <WebGPUSupportStatus supported={webGPUSupported} />
+          <p className='text-sm'>
+            FPS: {lastFrameTimeMs ? Math.ceil(1000 / lastFrameTimeMs) : '-'}
+          </p>
         </div>
-        <Button onClick={render}>Render</Button>
+        <Button disabled={!webGPUSupported} onClick={running ? stop : run}>
+          {running ? 'Stop' : 'Run'}
+        </Button>
       </div>
       <div className='relative flex-1 border-zinc-500 max-sm:border-t sm:border-l'>
         <Canvas ref={canvasRef} />
@@ -165,8 +195,4 @@ const draw = ({
   device.queue.writeBuffer(uniformsBuffer, 0, uniforms);
 
   device.queue.submit([commandEncoder.finish()]);
-};
-
-const showAlert = (message: string): void => {
-  alert(message); // eslint-disable-line no-alert
 };
