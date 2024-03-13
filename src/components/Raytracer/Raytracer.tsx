@@ -3,7 +3,8 @@ import {useEffect, useRef, useState} from 'react';
 import {useWebGPUSupport} from './useWebGPUSupport';
 import {Button} from './Button';
 import {Canvas} from './Canvas';
-import {WebGPUSupportStatus} from './WebGPUSupportStatus';
+import {StatFPS} from './StatFPS';
+import {StatWebGPUSupport} from './StatWebGPUSupport';
 import shaderWgsl from './shader.wgsl';
 
 export function Raytracer() {
@@ -72,10 +73,8 @@ export function Raytracer() {
       <div className='flex flex-1 flex-col gap-2 p-4 sm:max-w-xs'>
         <div className='flex flex-1 flex-col gap-2'>
           <h1 className='text-2xl underline'>WebGPU raytracer</h1>
-          <WebGPUSupportStatus supported={webGPUSupported} />
-          <p className='text-sm'>
-            FPS: {lastFrameTimeMs ? Math.ceil(1000 / lastFrameTimeMs) : '-'}
-          </p>
+          <StatWebGPUSupport supported={webGPUSupported} />
+          <StatFPS frameTimeMs={lastFrameTimeMs} />
         </div>
         <Button disabled={!webGPUSupported} onClick={running ? stop : run}>
           {running ? 'Stop' : 'Run'}
