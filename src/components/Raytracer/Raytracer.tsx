@@ -1,30 +1,11 @@
 'use client';
-import {useEffect, useRef} from 'react';
+import {useRef} from 'react';
 import {Button} from './Button';
+import {Canvas} from './Canvas';
 import shaderWgsl from './shader.wgsl';
 
 export function Raytracer() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const resizeCanvas = () => {
-      const {width, height} = canvas.getBoundingClientRect();
-      const scale = Math.max(window.devicePixelRatio, 1);
-      canvas.width = Math.floor(width * scale);
-      canvas.height = Math.floor(height * scale);
-    };
-
-    resizeCanvas();
-
-    window.addEventListener('resize', resizeCanvas);
-
-    return () => {
-      window.removeEventListener('resize', resizeCanvas);
-    };
-  }, []);
 
   const render = async () => {
     const canvas = canvasRef.current;
@@ -66,7 +47,7 @@ export function Raytracer() {
         <Button onClick={render}>Render</Button>
       </div>
       <div className='relative flex-1 border-l border-zinc-500'>
-        <canvas ref={canvasRef} className='absolute h-full w-full' />
+        <Canvas ref={canvasRef} />
       </div>
     </div>
   );
