@@ -36,7 +36,7 @@ fn fragment_main(@builtin(position) position: vec4f) -> @location(0) ColorRGBA
     )),
   );
 
-  let rgb = trace_ray(ray, lights, spheres);
+  let rgb = trace_rays(ray, lights, spheres);
 
   return ColorRGBA(rgb, 1.0);
 }
@@ -94,6 +94,57 @@ const spheres = array<Sphere, spheres_count>(
   Sphere(/* center */vec3f(-3.0, 2.0, -5.0), /* radius */2.0, /* material */material_blue),
   Sphere(/* center */vec3f(3.0, 2.0, -5.0), /* radius */0.5, /* material */material_pink),
 );
+
+fn trace_rays(
+  ray: Ray,
+  lights: array<Light, lights_count>,
+  spheres: array<Sphere, spheres_count>,
+) -> ColorRGB
+{
+  const MAX_DEPTH = 2;
+
+  var color = ColorRGB(0.0);
+
+  for (var depth: u32 = 0; depth < MAX_DEPTH; depth++) {
+    let sphere_hit = hit_spheres(spheres, ray);
+    if (sphere_hit.index < 0) {
+      color = color_sky(ray);
+      break;
+    }
+
+    let sphere = spheres[sphere_hit.index];
+    let hit = sphere_hit.hit;
+    let material = sphere.material;
+
+    let reflection_direction = normalize(reflect(ray.direction, hit.normal));
+    let reflection_origin = select(
+      hit.position + hit.normal * 0.00001,
+      hit.position - hit.normal * 0.00001,
+      dot(reflection_direction, hit.normal) < 0
+    );
+    let reflection_color = trace_ray(Ray(reflection_origin, reflection_direction), lights, spheres);
+
+    var diffuse_light_intensity: f32 = 0.0;
+    var specular_light_intensity: f32 = 0.0;
+    for (var i: i32 = 0; i < lights_count; i++) {
+      let light = lights[i];
+      let light_direction = normalize(light.position - hit.position);
+      let light_distance = distance(light.position, hit.position);
+      let shadow_origin = select(hit.position + hit.normal * 0.00001, hit.position - hit.normal * 0.00001, dot(light_direction, hit.normal) < 0);
+      let shadow_hit = hit_spheres(spheres, Ray(shadow_origin, light_direction));
+      if (shadow_hit.index >= 0 && distance(shadow_hit.hit.position, shadow_origin) < light_distance) {
+        continue;
+      }
+
+      diffuse_light_intensity += light.intensity * max(0.0, dot(light_direction, hit.normal));
+      specular_light_intensity += pow(max(0.0, dot(reflect(light_direction, hit.normal), ray.direction)), material.specular_exponent) * light.intensity;
+
+      color = material.diffuse_color * diffuse_light_intensity * material.albedo[0] + vec3f(1.0) * specular_light_intensity * material.albedo[1] + reflection_color * 0.2;
+    }
+  }
+
+  return color;
+}
 
 fn trace_ray(
   ray: Ray,
