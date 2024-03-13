@@ -1,10 +1,14 @@
 'use client';
 import {useRef} from 'react';
+import {useWebGPUSupport} from './useWebGPUSupport';
 import {Button} from './Button';
 import {Canvas} from './Canvas';
+import {WebGPUSupportStatus} from './WebGPUSupportStatus';
 import shaderWgsl from './shader.wgsl';
 
 export function Raytracer() {
+  const webGPUSupported = useWebGPUSupport();
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const render = async () => {
@@ -40,9 +44,10 @@ export function Raytracer() {
 
   return (
     <div className='absolute inset-0 flex flex-col sm:flex-row'>
-      <div className='flex flex-col gap-2 p-4 sm:max-w-xs'>
-        <div className='flex-1'>
-          <h1 className='text-2xl'>WebGPU raytracer</h1>
+      <div className='flex flex-1 flex-col gap-2 p-4 sm:max-w-xs'>
+        <div className='flex flex-1 flex-col gap-2'>
+          <h1 className='text-2xl underline'>WebGPU raytracer</h1>
+          <WebGPUSupportStatus supported={webGPUSupported} />
         </div>
         <Button onClick={render}>Render</Button>
       </div>
