@@ -10,6 +10,7 @@ on:
 
 env:
   BUILD_DIRECTORY: out
+  CLOUDFLARE_PROJECT_NAME: webgpu-raytracing
 
 jobs:
   ci:
@@ -35,8 +36,16 @@ jobs:
         run: bun run test:format
       - name: Build
         run: bun run build
+      - name: Publish to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: ${{ env.CLOUDFLARE_PROJECT_NAME }}
+          directory: ./${{ env.BUILD_DIRECTORY }}
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload static output artifact
         uses: actions/upload-artifact@v4
         with:
           name: build
-          path: ./${{env.BUILD_DIRECTORY}}
+          path: ./${{ env.BUILD_DIRECTORY }}

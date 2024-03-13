@@ -9,3 +9,4 @@ extends:
 
 rules:
   tailwindcss/classnames-order: 'off' # Handled by "prettier-plugin-tailwindcss"
+  '@typescript-eslint/naming-convention': 'off'
