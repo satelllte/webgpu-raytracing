@@ -1,5 +1,6 @@
 'use client';
 import {useEffect, useRef} from 'react';
+import {Button} from './Button';
 import shaderWgsl from './shader.wgsl';
 
 export function Raytracer() {
@@ -60,13 +61,7 @@ export function Raytracer() {
     <div className='absolute inset-0 flex flex-col gap-4 p-6'>
       <div className='flex flex-col gap-2 sm:flex-row sm:justify-between'>
         <h1 className='text-2xl sm:text-3xl'>WebGPU raytracer</h1>
-        <button
-          type='button'
-          className='border px-4 py-1 hover:bg-zinc-900 active:bg-zinc-800'
-          onClick={render}
-        >
-          Render
-        </button>
+        <Button onClick={render}>Render</Button>
       </div>
       <div className='relative flex-1 border border-white'>
         <canvas ref={canvasRef} className='absolute h-full w-full' />
