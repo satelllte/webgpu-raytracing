@@ -115,7 +115,7 @@ fn trace_ray(
     let light = lights[i];
     let light_direction = normalize(light.position - hit.position);
     let light_distance = distance(light.position, hit.position);
-    let shadow_origin = select(hit.position + hit.normal * 0.001, hit.position - hit.normal * 0.001, dot(light_direction, hit.normal) < 0);
+    let shadow_origin = select(hit.position + hit.normal * 0.00001, hit.position - hit.normal * 0.00001, dot(light_direction, hit.normal) < 0);
     let shadow_hit = hit_spheres(spheres, Ray(shadow_origin, light_direction));
     if (shadow_hit.index >= 0 && distance(shadow_hit.hit.position, shadow_origin) < light_distance) {
       continue;
