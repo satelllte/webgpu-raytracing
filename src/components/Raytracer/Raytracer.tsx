@@ -39,14 +39,14 @@ export function Raytracer() {
   };
 
   return (
-    <div className='absolute inset-0 flex'>
-      <div className='flex max-w-xs flex-col gap-2 p-4'>
+    <div className='absolute inset-0 flex flex-col sm:flex-row'>
+      <div className='flex flex-col gap-2 p-4 sm:max-w-xs'>
         <div className='flex-1'>
           <h1 className='text-2xl'>WebGPU raytracer</h1>
         </div>
         <Button onClick={render}>Render</Button>
       </div>
-      <div className='relative flex-1 border-l border-zinc-500'>
+      <div className='relative flex-1 border-zinc-500 max-sm:border-t sm:border-l'>
         <Canvas ref={canvasRef} />
       </div>
     </div>
