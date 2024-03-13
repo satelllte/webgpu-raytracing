@@ -1,14 +1,21 @@
-type ButtonProps = {
-  readonly onClick: () => void;
+import {forwardRef} from 'react';
+
+type NativeButtonProps = React.ComponentProps<'button'>;
+type NativeButtonPropsToExtend = Omit<
+  NativeButtonProps,
+  'type' | 'className' | 'children'
+>;
+type ButtonProps = NativeButtonPropsToExtend & {
   readonly children: string;
 };
 
-export function Button(props: ButtonProps) {
-  return (
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
+  (props, forwardedRef) => (
     <button
+      ref={forwardedRef}
       type='button'
       className='border px-4 py-1 hover:bg-zinc-900 active:bg-zinc-800'
       {...props}
     />
-  );
-}
+  ),
+);
