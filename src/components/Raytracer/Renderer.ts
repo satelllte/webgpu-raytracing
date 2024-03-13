@@ -1,4 +1,4 @@
-import shaderWgsl from './shader.wgsl';
+import shaderCode from './Renderer.wgsl';
 
 export class Renderer {
   private static get _RENDERER_NOT_INITIALIZED() {
@@ -80,7 +80,7 @@ export class Renderer {
 
     const shaderModule = device.createShaderModule({
       label: 'shader module',
-      code: shaderWgsl,
+      code: shaderCode,
     });
 
     const renderPipeline = device.createRenderPipeline({
