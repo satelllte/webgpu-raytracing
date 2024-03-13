@@ -67,14 +67,26 @@ export class Renderer {
       usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST, // eslint-disable-line no-bitwise
     });
 
-    const uniforms = new Int32Array([
-      context.canvas.width, /// width: u32
-      context.canvas.height, /// height: u32
+    const uniforms = new Float32Array([
+      context.canvas.width, /// width: f32
+      context.canvas.height, /// height: f32
     ]);
 
     const uniformsBuffer = device.createBuffer({
       label: 'uniforms buffer',
       size: uniforms.byteLength,
+      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST, // eslint-disable-line no-bitwise
+    });
+
+    // prettier-ignore
+    const uniformRay = new Float32Array([
+      0.0, 0.0, 0.0, 0.0, /// Ray.origin: vec3f (+4 bytes padding)
+      0.2, 0.2, 0.2, 0.0, /// Ray.direction: vec3f (+4 bytes padding)
+    ]);
+
+    const uniformRayBuffer = device.createBuffer({
+      label: 'uniform ray buffer',
+      size: uniformRay.byteLength,
       usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST, // eslint-disable-line no-bitwise
     });
 
@@ -112,7 +124,10 @@ export class Renderer {
     const uniformsBindGroup = device.createBindGroup({
       label: 'uniforms bind group',
       layout: renderPipeline.getBindGroupLayout(0),
-      entries: [{binding: 0, resource: {buffer: uniformsBuffer}}],
+      entries: [
+        {binding: 0, resource: {buffer: uniformsBuffer}},
+        {binding: 1, resource: {buffer: uniformRayBuffer}},
+      ],
     });
 
     const commandEncoder = device.createCommandEncoder({
@@ -131,13 +146,14 @@ export class Renderer {
     });
 
     passEncoder.setPipeline(renderPipeline);
-    passEncoder.setBindGroup(0, uniformsBindGroup);
     passEncoder.setVertexBuffer(0, verticesBuffer);
+    passEncoder.setBindGroup(0, uniformsBindGroup);
     passEncoder.draw(vertices.length / 4);
     passEncoder.end();
 
     device.queue.writeBuffer(verticesBuffer, 0, vertices);
     device.queue.writeBuffer(uniformsBuffer, 0, uniforms);
+    device.queue.writeBuffer(uniformRayBuffer, 0, uniformRay);
 
     device.queue.submit([commandEncoder.finish()]);
   }
