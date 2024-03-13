@@ -114,6 +114,13 @@ fn trace_ray(
   for (var i: i32 = 0; i < lights_count; i++) {
     let light = lights[i];
     let light_direction = normalize(light.position - hit.position);
+    let light_distance = distance(light.position, hit.position);
+    let shadow_origin = select(hit.position + hit.normal * 0.00001, hit.position - hit.normal * 0.00001, dot(light_direction, hit.normal) < 0);
+    let shadow_hit = hit_spheres(spheres, Ray(shadow_origin, light_direction));
+    if (shadow_hit.index >= 0 && distance(shadow_hit.hit.position, shadow_origin) < light_distance) {
+      continue;
+    }
+
     diffuse_light_intensity += light.intensity * max(0.0, dot(light_direction, hit.normal));
     specular_light_intensity += pow(max(0.0, dot(reflect(light_direction, hit.normal), ray.direction)), material.specular_exponent) * light.intensity;
   }
