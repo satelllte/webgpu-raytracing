@@ -1,5 +1,6 @@
 @group(0) @binding(0) var<uniform> dimensions: Dimensions;
-@group(0) @binding(1) var<storage> spheres: array<Sphere>;
+@group(0) @binding(1) var<storage> materials: array<Material>;
+@group(0) @binding(2) var<storage> spheres: array<Sphere>;
 
 @vertex
 fn vertex_main(@location(0) position: vec4f) -> @builtin(position) vec4f
@@ -30,20 +31,10 @@ fn fragment_main(@builtin(position) position: vec4f) -> @location(0) ColorRGBA
 alias ColorRGB = vec3f;
 alias ColorRGBA = vec4f;
 
-struct Dimensions {
-  width: f32,
-  height: f32,
-}
-
-struct Sphere {
-  center: vec3f,
-  radius: f32,
-}
-
-struct Ray {
-  origin: vec3f,
-  direction: vec3f, // must be normalized unit-vector
-}
+struct Dimensions { width: f32, height: f32 }
+struct Material { color: ColorRGB }
+struct Sphere { center: vec3f, radius: f32, material_index: f32 }
+struct Ray { origin: vec3f, direction: vec3f /* normalized unit-vector */ }
 
 fn color_spheres(camera_ray: Ray) -> ColorRGB
 {
@@ -51,15 +42,10 @@ fn color_spheres(camera_ray: Ray) -> ColorRGB
   for (var i: u32 = 0; i < spheres_count; i++) {
     let sphere = spheres[i];
     if (hit_sphere(sphere, camera_ray)) {
-      return color_sphere();
+      return materials[u32(sphere.material_index)].color;
     }
   }
   return color_sky(camera_ray);
-}
-
-fn color_sphere() -> ColorRGB
-{
-  return ColorRGB(0.8, 0.5, 0.8);
 }
 
 fn color_sky(ray: Ray) -> ColorRGB

@@ -5,11 +5,25 @@ export class Renderer {
     return 'Renderer was not initialized properly';
   }
 
+  private static get _verticesData(): Float32Array {
+    // prettier-ignore
+    return new Float32Array([
+      /// position<vec4f> (xyzw)
+      -1.0,  1.0, 0.0, 1.0,
+      -1.0, -1.0, 0.0, 1.0,
+       1.0,  1.0, 0.0, 1.0,
+       1.0,  1.0, 0.0, 1.0,
+      -1.0, -1.0, 0.0, 1.0,
+       1.0, -1.0, 0.0, 1.0,
+    ]);
+  }
+
   private _adapter: GPUAdapter | undefined;
   private _context: GPUCanvasContext | undefined;
   private _device: GPUDevice | undefined;
   private _preferredCanvasFormat: GPUTextureFormat | undefined;
 
+  private _materials: Material[] = [];
   private _spheres: Sphere[] = [];
 
   public async init(canvas: HTMLCanvasElement): Promise<void> {
@@ -34,17 +48,41 @@ export class Renderer {
     this._preferredCanvasFormat = undefined;
   }
 
+  public setMaterials(materials: Material[]): void {
+    this._materials = materials;
+  }
+
+  private get _materialsData(): Float32Array {
+    if (!this._materials.length) {
+      return new Float32Array([0.0, 0.0, 0.0, 0.0]); // Minimum binding size is 16 bytes, so passing a single "void" one
+    }
+
+    return new Float32Array(
+      this._materials.flatMap((material) => [
+        ...material.color, /// color: ColorRGB
+        0.0, /// 4 bytes padding
+      ]),
+    );
+  }
+
   public setSpheres(spheres: Sphere[]): void {
     this._spheres = spheres;
   }
 
   private get _spheresData(): Float32Array {
     if (!this._spheres.length) {
-      return new Float32Array([0.0, 0.0, 0.0, 0.0]); // Minimum binding size is 16 bytes, so passing a single "void" one
+      return new Float32Array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]); // Minimum binding size is 32 bytes, so passing a single "void" one
     }
 
     return new Float32Array(
-      this._spheres.flatMap((sphere) => [...sphere.center, sphere.radius]),
+      this._spheres.flatMap((sphere) => [
+        ...sphere.center, /// center: vec3f
+        sphere.radius, /// radius: f32
+        sphere.materialIndex, /// material_index: f32 || TODO: figure out how to pass u32 properly instead
+        0.0, /// 4 bytes padding
+        0.0, /// 4 bytes padding
+        0.0, /// 4 bytes padding
+      ]),
     );
   }
 
@@ -64,42 +102,6 @@ export class Renderer {
       device,
       format: preferredCanvasFormat,
       alphaMode: 'premultiplied',
-    });
-
-    // prettier-ignore
-    const vertices = new Float32Array([
-      /// position<vec4f> (xyzw)
-      -1.0,  1.0, 0.0, 1.0,
-      -1.0, -1.0, 0.0, 1.0,
-      1.0,  1.0, 0.0, 1.0,
-      1.0,  1.0, 0.0, 1.0,
-      -1.0, -1.0, 0.0, 1.0,
-      1.0, -1.0, 0.0, 1.0,
-    ]);
-
-    const verticesBuffer = device.createBuffer({
-      label: 'vertices buffer',
-      size: vertices.byteLength,
-      usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST, // eslint-disable-line no-bitwise
-    });
-
-    const dimensions = new Float32Array([
-      context.canvas.width, /// width: f32
-      context.canvas.height, /// height: f32
-    ]);
-
-    const dimensionsBuffer = device.createBuffer({
-      label: 'dimensions buffer',
-      size: dimensions.byteLength,
-      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST, // eslint-disable-line no-bitwise
-    });
-
-    const spheres = this._spheresData;
-
-    const spheresBuffer = device.createBuffer({
-      label: 'spheres buffer',
-      size: spheres.byteLength,
-      usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST, // eslint-disable-line no-bitwise
     });
 
     const shaderModule = device.createShaderModule({
@@ -133,12 +135,48 @@ export class Renderer {
       },
     });
 
+    const usageVertex = GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST; // eslint-disable-line no-bitwise
+    const usageUniform = GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST; // eslint-disable-line no-bitwise
+    const usageStorage = GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST; // eslint-disable-line no-bitwise
+
+    const vertices = Renderer._verticesData;
+    const verticesBuffer = device.createBuffer({
+      label: 'vertices buffer',
+      size: vertices.byteLength,
+      usage: usageVertex,
+    });
+
+    const dimensions = new Float32Array([
+      context.canvas.width, /// width: f32
+      context.canvas.height, /// height: f32
+    ]);
+    const dimensionsBuffer = device.createBuffer({
+      label: 'dimensions buffer',
+      size: dimensions.byteLength,
+      usage: usageUniform,
+    });
+
+    const materials = this._materialsData;
+    const materialsBuffer = device.createBuffer({
+      label: 'materials buffer',
+      size: materials.byteLength,
+      usage: usageStorage,
+    });
+
+    const spheres = this._spheresData;
+    const spheresBuffer = device.createBuffer({
+      label: 'spheres buffer',
+      size: spheres.byteLength,
+      usage: usageStorage,
+    });
+
     const uniformsBindGroup = device.createBindGroup({
       label: 'uniforms bind group',
       layout: renderPipeline.getBindGroupLayout(0),
       entries: [
         {binding: 0, resource: {buffer: dimensionsBuffer}},
-        {binding: 1, resource: {buffer: spheresBuffer}},
+        {binding: 1, resource: {buffer: materialsBuffer}},
+        {binding: 2, resource: {buffer: spheresBuffer}},
       ],
     });
 
@@ -165,6 +203,7 @@ export class Renderer {
 
     device.queue.writeBuffer(verticesBuffer, 0, vertices);
     device.queue.writeBuffer(dimensionsBuffer, 0, dimensions);
+    device.queue.writeBuffer(materialsBuffer, 0, materials);
     device.queue.writeBuffer(spheresBuffer, 0, spheres);
 
     device.queue.submit([commandEncoder.finish()]);
@@ -172,8 +211,6 @@ export class Renderer {
 }
 
 export type Vector3 = [number, number, number];
-
-export type Sphere = {
-  center: Vector3;
-  radius: number;
-};
+export type ColorRGB = Vector3;
+export type Material = {color: ColorRGB};
+export type Sphere = {center: Vector3; radius: number; materialIndex: number};

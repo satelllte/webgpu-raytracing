@@ -4,7 +4,7 @@ import {useEffectEvent} from './useEffectEvent';
 import {useWebGPUSupport} from './useWebGPUSupport';
 import {Button} from './Button';
 import {Canvas} from './Canvas';
-import {Renderer, type Sphere} from './Renderer';
+import {Renderer, type Material, type Sphere} from './Renderer';
 import {StatFPS} from './StatFPS';
 import {StatWebGPUSupport} from './StatWebGPUSupport';
 
@@ -23,6 +23,7 @@ export function Raytracer() {
     const renderer = rendererRef.current;
     if (!renderer) throw new Error('renderer ref is not set');
 
+    renderer.setMaterials(getFrameMaterials());
     renderer.setSpheres(getFrameSpheres(timeMs));
     renderer.draw();
   });
@@ -50,22 +51,31 @@ export function Raytracer() {
   );
 }
 
+const getFrameMaterials = (): Material[] => [
+  {color: [0.5, 0.1, 0.2]},
+  {color: [0.1, 0.5, 0.2]},
+  {color: [0.1, 0.2, 0.5]},
+];
+
 const getFrameSpheres = (timeMs: number): Sphere[] => [
   {
+    materialIndex: 0,
+    radius: 0.75 + 0.25 * Math.sin(timeMs * 0.0009),
     center: [-4.5, 0.5, -5.5],
-    radius: 0.75 + 0.25 * Math.sin(timeMs * 0.001),
   },
   {
-    center: [2.2, 0.0 + Math.sin(timeMs * 0.001), -4.0],
+    materialIndex: 1,
     radius: 0.75,
+    center: [2.2, 0.0 + Math.sin(timeMs * 0.001), -4.0],
   },
   {
+    materialIndex: 2,
+    radius: 1.0,
     center: [
       0.3 + 3.0 * Math.sin(timeMs * 0.00025),
-      0.0 + Math.sin(timeMs * 0.001),
+      0.0 + Math.sin(timeMs * 0.0011),
       -9.0,
     ],
-    radius: 1.0,
   },
 ];
 
