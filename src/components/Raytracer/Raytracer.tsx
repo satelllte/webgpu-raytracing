@@ -52,6 +52,10 @@ export function Raytracer() {
 
 const getFrameSpheres = (timeMs: number): Sphere[] => [
   {
+    center: [-4.5, 0.5, -5.5],
+    radius: 0.75 + 0.25 * Math.sin(timeMs * 0.001),
+  },
+  {
     center: [2.2, 0.0 + Math.sin(timeMs * 0.001), -4.0],
     radius: 0.75,
   },
