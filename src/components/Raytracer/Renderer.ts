@@ -34,10 +34,6 @@ export class Renderer {
     this._preferredCanvasFormat = undefined;
   }
 
-  public get spheres(): Sphere[] {
-    return this._spheres;
-  }
-
   public setSpheres(spheres: Sphere[]): void {
     this._spheres = spheres;
   }
