@@ -1,10 +1,4 @@
-// const PI = 3.14159265358979;
-
-struct Uniforms {
-  width: f32,
-  height: f32,
-}
-@group(0) @binding(0) var<uniform> uniforms: Uniforms;
+@group(0) @binding(0) var<uniform> dimensions: Dimensions;
 
 @vertex
 fn vertex_main(@location(0) position: vec4f) -> @builtin(position) vec4f
@@ -15,8 +9,8 @@ fn vertex_main(@location(0) position: vec4f) -> @builtin(position) vec4f
 @fragment
 fn fragment_main(@builtin(position) position: vec4f) -> @location(0) ColorRGBA
 {
-  let width = uniforms.width;
-  let height = uniforms.height;
+  let width = dimensions.width;
+  let height = dimensions.height;
   let uv = position.xy / vec2f(width, height);
   return ColorRGBA(uv, 0.0, 1.0);
 
@@ -51,6 +45,11 @@ fn fragment_main(@builtin(position) position: vec4f) -> @location(0) ColorRGBA
 
 alias ColorRGB = vec3f;
 alias ColorRGBA = vec4f;
+
+struct Dimensions {
+  width: f32,
+  height: f32,
+}
 
 struct Ray {
   origin: vec3f,

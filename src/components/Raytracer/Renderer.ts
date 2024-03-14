@@ -67,14 +67,14 @@ export class Renderer {
       usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST, // eslint-disable-line no-bitwise
     });
 
-    const uniforms = new Float32Array([
+    const dimensions = new Float32Array([
       context.canvas.width, /// width: f32
       context.canvas.height, /// height: f32
     ]);
 
-    const uniformsBuffer = device.createBuffer({
-      label: 'uniforms buffer',
-      size: uniforms.byteLength,
+    const dimensionsBuffer = device.createBuffer({
+      label: 'dimensions buffer',
+      size: dimensions.byteLength,
       usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST, // eslint-disable-line no-bitwise
     });
 
@@ -112,7 +112,7 @@ export class Renderer {
     const uniformsBindGroup = device.createBindGroup({
       label: 'uniforms bind group',
       layout: renderPipeline.getBindGroupLayout(0),
-      entries: [{binding: 0, resource: {buffer: uniformsBuffer}}],
+      entries: [{binding: 0, resource: {buffer: dimensionsBuffer}}],
     });
 
     const commandEncoder = device.createCommandEncoder({
@@ -137,7 +137,7 @@ export class Renderer {
     passEncoder.end();
 
     device.queue.writeBuffer(verticesBuffer, 0, vertices);
-    device.queue.writeBuffer(uniformsBuffer, 0, uniforms);
+    device.queue.writeBuffer(dimensionsBuffer, 0, dimensions);
 
     device.queue.submit([commandEncoder.finish()]);
   }
