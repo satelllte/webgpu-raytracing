@@ -2,8 +2,10 @@ import {useEffect, useState} from 'react';
 import {Stat} from './Stat';
 
 export function StatFPS({
+  running,
   frameTimeMsRef,
 }: {
+  readonly running: boolean;
   readonly frameTimeMsRef: React.MutableRefObject<number | undefined>;
 }) {
   const [frameTimeMs, setFrameTimeMs] = useState<number | undefined>();
@@ -18,7 +20,7 @@ export function StatFPS({
     };
   }, [frameTimeMsRef]);
 
-  if (frameTimeMs === undefined) {
+  if (!running || frameTimeMs === undefined) {
     return <Stat variant='muted'>FPS: -</Stat>;
   }
 

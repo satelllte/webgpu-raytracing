@@ -10,6 +10,8 @@ export class Renderer {
   private _device: GPUDevice | undefined;
   private _preferredCanvasFormat: GPUTextureFormat | undefined;
 
+  private _spheres: Sphere[] = [];
+
   public async init(canvas: HTMLCanvasElement): Promise<void> {
     const context = canvas.getContext('webgpu');
     if (!context) throw new Error('Failed to get WebGPU context');
@@ -30,6 +32,24 @@ export class Renderer {
     this._context = undefined;
     this._device = undefined;
     this._preferredCanvasFormat = undefined;
+  }
+
+  public get spheres(): Sphere[] {
+    return this._spheres;
+  }
+
+  public setSpheres(spheres: Sphere[]): void {
+    this._spheres = spheres;
+  }
+
+  private get _spheresData(): Float32Array {
+    if (!this._spheres.length) {
+      return new Float32Array([0.0, 0.0, 0.0, 0.0]); // Minimum binding size is 16 bytes, so passing a single "void" one
+    }
+
+    return new Float32Array(
+      this._spheres.flatMap((sphere) => [...sphere.center, sphere.radius]),
+    );
   }
 
   public draw(): void {
@@ -78,16 +98,7 @@ export class Renderer {
       usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST, // eslint-disable-line no-bitwise
     });
 
-    // prettier-ignore
-    const spheres = new Float32Array([
-      /// spheres[0]
-      2.2, 0.0, -4.0, /// center: vec3f
-      0.75, /// radius: f32
-
-      /// spheres[1]
-      0.3, 0.0, -9.0, /// center: vec3f
-      1.0, /// radius: f32
-    ]);
+    const spheres = this._spheresData;
 
     const spheresBuffer = device.createBuffer({
       label: 'spheres buffer',
@@ -163,3 +174,10 @@ export class Renderer {
     device.queue.submit([commandEncoder.finish()]);
   }
 }
+
+export type Vector3 = [number, number, number];
+
+export type Sphere = {
+  center: Vector3;
+  radius: number;
+};
