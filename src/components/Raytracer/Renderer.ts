@@ -139,34 +139,34 @@ export class Renderer {
     const usageUniform = GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST; // eslint-disable-line no-bitwise
     const usageStorage = GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST; // eslint-disable-line no-bitwise
 
-    const vertices = Renderer._verticesData;
+    const verticesData = Renderer._verticesData;
     const verticesBuffer = device.createBuffer({
       label: 'vertices buffer',
-      size: vertices.byteLength,
+      size: verticesData.byteLength,
       usage: usageVertex,
     });
 
-    const dimensions = new Float32Array([
+    const dimensionsData = new Float32Array([
       context.canvas.width, /// width: f32
       context.canvas.height, /// height: f32
     ]);
     const dimensionsBuffer = device.createBuffer({
       label: 'dimensions buffer',
-      size: dimensions.byteLength,
+      size: dimensionsData.byteLength,
       usage: usageUniform,
     });
 
-    const materials = this._materialsData;
+    const materialsData = this._materialsData;
     const materialsBuffer = device.createBuffer({
       label: 'materials buffer',
-      size: materials.byteLength,
+      size: materialsData.byteLength,
       usage: usageStorage,
     });
 
-    const spheres = this._spheresData;
+    const spheresData = this._spheresData;
     const spheresBuffer = device.createBuffer({
       label: 'spheres buffer',
-      size: spheres.byteLength,
+      size: spheresData.byteLength,
       usage: usageStorage,
     });
 
@@ -198,13 +198,13 @@ export class Renderer {
     passEncoder.setPipeline(renderPipeline);
     passEncoder.setVertexBuffer(0, verticesBuffer);
     passEncoder.setBindGroup(0, uniformsBindGroup);
-    passEncoder.draw(vertices.length / 4);
+    passEncoder.draw(verticesData.length / 4);
     passEncoder.end();
 
-    device.queue.writeBuffer(verticesBuffer, 0, vertices);
-    device.queue.writeBuffer(dimensionsBuffer, 0, dimensions);
-    device.queue.writeBuffer(materialsBuffer, 0, materials);
-    device.queue.writeBuffer(spheresBuffer, 0, spheres);
+    device.queue.writeBuffer(verticesBuffer, 0, verticesData);
+    device.queue.writeBuffer(dimensionsBuffer, 0, dimensionsData);
+    device.queue.writeBuffer(materialsBuffer, 0, materialsData);
+    device.queue.writeBuffer(spheresBuffer, 0, spheresData);
 
     device.queue.submit([commandEncoder.finish()]);
   }
