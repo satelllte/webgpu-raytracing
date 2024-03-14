@@ -78,6 +78,23 @@ export class Renderer {
       usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST, // eslint-disable-line no-bitwise
     });
 
+    // prettier-ignore
+    const spheres = new Float32Array([
+      /// spheres[0]
+      2.2, 0.0, -4.0, /// center: vec3f
+      0.75, /// radius: f32
+
+      /// spheres[1]
+      0.3, 0.0, -9.0, /// center: vec3f
+      1.0, /// radius: f32
+    ]);
+
+    const spheresBuffer = device.createBuffer({
+      label: 'spheres buffer',
+      size: spheres.byteLength,
+      usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST, // eslint-disable-line no-bitwise
+    });
+
     const shaderModule = device.createShaderModule({
       label: 'shader module',
       code: shaderCode,
@@ -112,7 +129,10 @@ export class Renderer {
     const uniformsBindGroup = device.createBindGroup({
       label: 'uniforms bind group',
       layout: renderPipeline.getBindGroupLayout(0),
-      entries: [{binding: 0, resource: {buffer: dimensionsBuffer}}],
+      entries: [
+        {binding: 0, resource: {buffer: dimensionsBuffer}},
+        {binding: 1, resource: {buffer: spheresBuffer}},
+      ],
     });
 
     const commandEncoder = device.createCommandEncoder({
@@ -138,6 +158,7 @@ export class Renderer {
 
     device.queue.writeBuffer(verticesBuffer, 0, vertices);
     device.queue.writeBuffer(dimensionsBuffer, 0, dimensions);
+    device.queue.writeBuffer(spheresBuffer, 0, spheres);
 
     device.queue.submit([commandEncoder.finish()]);
   }
