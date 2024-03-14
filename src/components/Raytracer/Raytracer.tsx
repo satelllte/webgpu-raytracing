@@ -28,19 +28,7 @@ export function Raytracer() {
 
   const [running, setRunning] = useState<boolean>(false);
   const animationFrameIdRef = useRef<number | undefined>();
-
   const lastFrameTimeMsRef = useRef<number | undefined>();
-  const [lastFrameTimeMs, setLastFrameTimeMs] = useState<number | undefined>();
-
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      setLastFrameTimeMs(lastFrameTimeMsRef.current);
-    }, 200);
-
-    return () => {
-      clearInterval(intervalId);
-    };
-  }, []);
 
   const run = () => {
     if (running) return;
@@ -77,7 +65,7 @@ export function Raytracer() {
         <div className='flex flex-1 flex-col gap-2'>
           <h1 className='text-2xl underline'>WebGPU raytracer</h1>
           <StatWebGPUSupport supported={webGPUSupported} />
-          <StatFPS frameTimeMs={lastFrameTimeMs} />
+          <StatFPS frameTimeMsRef={lastFrameTimeMsRef} />
         </div>
         <Button disabled={!webGPUSupported} onClick={running ? stop : run}>
           {running ? 'Stop' : 'Run'}
