@@ -23,6 +23,7 @@ export class Renderer {
   private _device: GPUDevice | undefined;
   private _preferredCanvasFormat: GPUTextureFormat | undefined;
 
+  private _light: Light | undefined;
   private _materials: Material[] = [];
   private _spheres: Sphere[] = [];
 
@@ -46,6 +47,23 @@ export class Renderer {
     this._context = undefined;
     this._device = undefined;
     this._preferredCanvasFormat = undefined;
+  }
+
+  public setLight(light: Light): void {
+    this._light = light;
+  }
+
+  private get _lightData(): Float32Array {
+    if (!this._light) {
+      return new Float32Array([0.0, 0.0, 0.0, 0.0]); // Minimum binding size is 16 bytes, so passing a single "void" one
+    }
+
+    return new Float32Array([
+      this._light.position[0], /// position: vec3f (0)
+      this._light.position[1], /// position: vec3f (1)
+      this._light.position[2], /// position: vec3f (2)
+      0.0, /// 4 bytes padding
+    ]);
   }
 
   public setMaterials(materials: Material[]): void {
@@ -156,6 +174,13 @@ export class Renderer {
       usage: usageUniform,
     });
 
+    const lightData = this._lightData;
+    const lightBuffer = device.createBuffer({
+      label: 'light buffer',
+      size: lightData.byteLength,
+      usage: usageUniform,
+    });
+
     const materialsData = this._materialsData;
     const materialsBuffer = device.createBuffer({
       label: 'materials buffer',
@@ -175,8 +200,9 @@ export class Renderer {
       layout: renderPipeline.getBindGroupLayout(0),
       entries: [
         {binding: 0, resource: {buffer: dimensionsBuffer}},
-        {binding: 1, resource: {buffer: materialsBuffer}},
-        {binding: 2, resource: {buffer: spheresBuffer}},
+        {binding: 1, resource: {buffer: lightBuffer}},
+        {binding: 2, resource: {buffer: materialsBuffer}},
+        {binding: 3, resource: {buffer: spheresBuffer}},
       ],
     });
 
@@ -203,6 +229,7 @@ export class Renderer {
 
     device.queue.writeBuffer(verticesBuffer, 0, verticesData);
     device.queue.writeBuffer(dimensionsBuffer, 0, dimensionsData);
+    device.queue.writeBuffer(lightBuffer, 0, lightData);
     device.queue.writeBuffer(materialsBuffer, 0, materialsData);
     device.queue.writeBuffer(spheresBuffer, 0, spheresData);
 
@@ -212,5 +239,6 @@ export class Renderer {
 
 export type Vector3 = [number, number, number];
 export type ColorRGB = Vector3;
+export type Light = {position: Vector3};
 export type Material = {color: ColorRGB};
 export type Sphere = {center: Vector3; radius: number; materialIndex: number};

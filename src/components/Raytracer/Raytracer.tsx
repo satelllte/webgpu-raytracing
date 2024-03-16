@@ -5,7 +5,7 @@ import {useEffectEvent} from './useEffectEvent';
 import {useWebGPUSupport} from './useWebGPUSupport';
 import {Button} from './Button';
 import {Canvas} from './Canvas';
-import {Renderer, type Material, type Sphere} from './Renderer';
+import {Renderer, type Material, type Sphere, type Light} from './Renderer';
 import {StatFPS} from './StatFPS';
 import {StatWebGPUSupport} from './StatWebGPUSupport';
 import {hexToRgb01} from './utils';
@@ -19,7 +19,7 @@ export function Raytracer() {
 
   const [running, setRunning] = useState<boolean>(false);
 
-  const {materials} = useVariables();
+  const {light, materials} = useVariables();
 
   useFrame(running, ({timeMs, deltaTimeMs}) => {
     frameTimeMsRef.current = deltaTimeMs;
@@ -27,6 +27,7 @@ export function Raytracer() {
     const renderer = rendererRef.current;
     if (!renderer) throw new Error('renderer ref is not set');
 
+    renderer.setLight(light);
     renderer.setMaterials(materials);
     renderer.setSpheres(getFrameSpheres(timeMs));
     renderer.draw();
@@ -122,8 +123,13 @@ const useFrame = (
   }, [running, innerCallback]);
 };
 
-const useVariables = () => {
-  const {material1, material2, material3} = useControls({
+const useVariables = (): {light: Light; materials: Material[]} => {
+  const {light, material1, material2, material3} = useControls({
+    light: {
+      label: 'Light',
+      value: [-4.8, 5.5, 0.0],
+      step: 0.1,
+    },
     material1: {
       label: 'Material 1',
       value: '#801a33',
@@ -138,11 +144,12 @@ const useVariables = () => {
     },
   });
 
-  const materials: Material[] = [
-    {color: hexToRgb01(material1)},
-    {color: hexToRgb01(material2)},
-    {color: hexToRgb01(material3)},
-  ];
-
-  return {materials};
+  return {
+    light: {position: light},
+    materials: [
+      {color: hexToRgb01(material1)},
+      {color: hexToRgb01(material2)},
+      {color: hexToRgb01(material3)},
+    ],
+  };
 };

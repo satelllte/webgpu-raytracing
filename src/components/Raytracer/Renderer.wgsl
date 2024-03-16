@@ -1,6 +1,7 @@
 @group(0) @binding(0) var<uniform> dimensions: Dimensions;
-@group(0) @binding(1) var<storage> materials: array<Material>;
-@group(0) @binding(2) var<storage> spheres: array<Sphere>;
+@group(0) @binding(1) var<uniform> light: Light;
+@group(0) @binding(2) var<storage> materials: array<Material>;
+@group(0) @binding(3) var<storage> spheres: array<Sphere>;
 
 @vertex
 fn vertex_main(@location(0) position: vec4f) -> @builtin(position) vec4f
@@ -32,13 +33,11 @@ alias ColorRGB = vec3f;
 alias ColorRGBA = vec4f;
 
 struct Dimensions { width: f32, height: f32 }
+struct Light { position: vec3f }
 struct Material { color: ColorRGB }
 struct Sphere { center: vec3f, radius: f32, material_index: f32 }
 struct Ray { origin: vec3f, direction: vec3f /* normalized unit-vector */ }
 struct RayHit { position: vec3f, normal: vec3f, t: f32 /* no hit when less than 0 */ }
-struct Light { position: vec3f }
-
-const light = Light(/* position */vec3f(1.0, 5.0, -2.0));
 
 fn color_spheres(camera_ray: Ray) -> ColorRGB
 {
