@@ -39,25 +39,30 @@ struct Sphere { center: vec3f, radius: f32, material_index: f32 }
 struct Ray { origin: vec3f, direction: vec3f /* normalized unit-vector */ }
 struct RayHit { position: vec3f, normal: vec3f, t: f32 /* no hit when less than 0 */ }
 
-/**
- * TODO: fix bug when nearest sphere gets covered by the one that just has lower index
- */
 fn color_spheres(camera_ray: Ray) -> ColorRGB
 {
   let spheres_count = arrayLength(&spheres);
+  var closest_hit = no_hit();
+  var closest_sphere_index = -1;
   for (var i: u32 = 0; i < spheres_count; i++) {
     let sphere = spheres[i];
     let hit = hit_sphere(sphere, camera_ray);
     if (hit.t <= 0.0) { continue; }
-
-    let light_direction = normalize(light.position - hit.position);
-    let color = materials[u32(sphere.material_index)].color;
-    return color * max(dot(light_direction, hit.normal), 0.0);
+    if (closest_hit.t >= 0 && closest_hit.t <= hit.t) { continue; }
+    closest_hit = hit;
+    closest_sphere_index = i32(i);
   }
-  return color_sky(camera_ray);
+
+  if (closest_sphere_index < 0) { return color_background(); }
+
+  let sphere = spheres[closest_sphere_index];
+  let hit = closest_hit;
+  let light_direction = normalize(light.position - hit.position);
+  let color = materials[u32(sphere.material_index)].color;
+  return color * max(dot(light_direction, hit.normal), 0.0);
 }
 
-fn color_sky(ray: Ray) -> ColorRGB
+fn color_background() -> ColorRGB
 {
   return ColorRGB(0.04);
 }

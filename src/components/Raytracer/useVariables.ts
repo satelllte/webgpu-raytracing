@@ -63,7 +63,7 @@ export const useVariables = (): {
         },
         sphere0Center: {
           label: 'Center',
-          value: [-4.5, 0.5, -5.5],
+          value: [-0.2, 0.0, -4.1],
           step: 0.1,
         },
       }),
@@ -80,7 +80,7 @@ export const useVariables = (): {
         },
         sphere1Center: {
           label: 'Center',
-          value: [2.2, 0.0, -4.0],
+          value: [1.9, 0.1, -8.0],
           step: 0.1,
         },
       }),
@@ -97,7 +97,7 @@ export const useVariables = (): {
         },
         sphere2Center: {
           label: 'Center',
-          value: [3.3, 0.1, -9.0],
+          value: [0.7, -0.4, -6.1],
           step: 0.1,
         },
       }),
