@@ -1,5 +1,6 @@
 'use client';
 import {useEffect, useRef, useState} from 'react';
+import {useControls} from 'leva';
 import {useEffectEvent} from './useEffectEvent';
 import {useWebGPUSupport} from './useWebGPUSupport';
 import {Button} from './Button';
@@ -7,6 +8,7 @@ import {Canvas} from './Canvas';
 import {Renderer, type Material, type Sphere} from './Renderer';
 import {StatFPS} from './StatFPS';
 import {StatWebGPUSupport} from './StatWebGPUSupport';
+import {hexToRgb01} from './utils';
 
 export function Raytracer() {
   const webGPUSupported = useWebGPUSupport();
@@ -17,13 +19,15 @@ export function Raytracer() {
 
   const [running, setRunning] = useState<boolean>(false);
 
+  const {materials} = useVariables();
+
   useFrame(running, ({timeMs, deltaTimeMs}) => {
     frameTimeMsRef.current = deltaTimeMs;
 
     const renderer = rendererRef.current;
     if (!renderer) throw new Error('renderer ref is not set');
 
-    renderer.setMaterials(getFrameMaterials());
+    renderer.setMaterials(materials);
     renderer.setSpheres(getFrameSpheres(timeMs));
     renderer.draw();
   });
@@ -50,12 +54,6 @@ export function Raytracer() {
     </div>
   );
 }
-
-const getFrameMaterials = (): Material[] => [
-  {color: [0.5, 0.1, 0.2]},
-  {color: [0.1, 0.5, 0.2]},
-  {color: [0.1, 0.2, 0.5]},
-];
 
 const getFrameSpheres = (timeMs: number): Sphere[] => [
   {
@@ -122,4 +120,30 @@ const useFrame = (
       cancelAnimationFrame(frameId);
     };
   }, [running, innerCallback]);
+};
+
+const useVariables = () => {
+  console.debug('useVariables | render');
+  const {material1, material2, material3} = useControls({
+    material1: {
+      label: 'Material 1',
+      value: '#801a33',
+    },
+    material2: {
+      label: 'Material 2',
+      value: '#1a8033',
+    },
+    material3: {
+      label: 'Material 3',
+      value: '#901b90',
+    },
+  });
+
+  const materials: Material[] = [
+    {color: hexToRgb01(material1)},
+    {color: hexToRgb01(material2)},
+    {color: hexToRgb01(material3)},
+  ];
+
+  return {materials};
 };
