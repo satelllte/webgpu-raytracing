@@ -123,7 +123,6 @@ const useFrame = (
 };
 
 const useVariables = () => {
-  console.debug('useVariables | render');
   const {material1, material2, material3} = useControls({
     material1: {
       label: 'Material 1',
