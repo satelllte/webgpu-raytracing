@@ -1,15 +1,14 @@
 'use client';
 import {useEffect, useRef, useState} from 'react';
-import {useControls} from 'leva';
 import {useEffectEvent} from './useEffectEvent';
+import {useVariables} from './useVariables';
 import {useWebGPUSupport} from './useWebGPUSupport';
 import {Button} from './Button';
 import {Canvas} from './Canvas';
-import {Renderer, type Material, type Sphere, type Light} from './Renderer';
+import {Renderer} from './Renderer';
 import {StatFPS} from './StatFPS';
 import {StatFrameTime} from './StatFrameTime';
 import {StatWebGPUSupport} from './StatWebGPUSupport';
-import {hexToRgb01} from './utils';
 
 export function Raytracer() {
   const webGPUSupported = useWebGPUSupport();
@@ -20,7 +19,7 @@ export function Raytracer() {
 
   const [running, setRunning] = useState<boolean>(false);
 
-  const {light, materials} = useVariables();
+  const {light, materials, spheres} = useVariables();
 
   useFrame(running, ({timeMs, deltaTimeMs}) => {
     frameTimeMsRef.current = deltaTimeMs;
@@ -30,7 +29,7 @@ export function Raytracer() {
 
     renderer.setLight(light);
     renderer.setMaterials(materials);
-    renderer.setSpheres(getFrameSpheres(timeMs));
+    renderer.setSpheres(spheres);
     renderer.draw();
   });
 
@@ -57,28 +56,6 @@ export function Raytracer() {
     </div>
   );
 }
-
-const getFrameSpheres = (timeMs: number): Sphere[] => [
-  {
-    materialIndex: 0,
-    radius: 0.75 + 0.25 * Math.sin(timeMs * 0.0009),
-    center: [-4.5, 0.5, -5.5],
-  },
-  {
-    materialIndex: 1,
-    radius: 0.75,
-    center: [2.2, 0.0 + Math.sin(timeMs * 0.001), -4.0],
-  },
-  {
-    materialIndex: 2,
-    radius: 1.0,
-    center: [
-      0.3 + 3.0 * Math.sin(timeMs * 0.00025),
-      0.0 + Math.sin(timeMs * 0.0011),
-      -9.0,
-    ],
-  },
-];
 
 const useRendererRef = (canvasRef: React.RefObject<HTMLCanvasElement>) => {
   const rendererRef = useRef<Renderer>();
@@ -123,35 +100,4 @@ const useFrame = (
       cancelAnimationFrame(frameId);
     };
   }, [running, innerCallback]);
-};
-
-const useVariables = (): {light: Light; materials: Material[]} => {
-  const {light, material1, material2, material3} = useControls({
-    light: {
-      label: 'Light',
-      value: [-4.8, 5.5, 0.0],
-      step: 0.1,
-    },
-    material1: {
-      label: 'Material 1',
-      value: '#212d79',
-    },
-    material2: {
-      label: 'Material 2',
-      value: '#1a8033',
-    },
-    material3: {
-      label: 'Material 3',
-      value: '#901b90',
-    },
-  });
-
-  return {
-    light: {position: light},
-    materials: [
-      {color: hexToRgb01(material1)},
-      {color: hexToRgb01(material2)},
-      {color: hexToRgb01(material3)},
-    ],
-  };
 };
