@@ -49,16 +49,15 @@ fn color_spheres(camera_ray: Ray) -> ColorRGB
     if (hit.t <= 0.0) { continue; }
 
     let light_direction = normalize(light.position - hit.position);
-    let color_min = ColorRGB(0.0);
-    let color_max = materials[u32(sphere.material_index)].color;
-    return lerp(color_min, color_max, dot(light_direction, hit.normal));
+    let color = materials[u32(sphere.material_index)].color;
+    return color * max(dot(light_direction, hit.normal), 0.0);
   }
   return color_sky(camera_ray);
 }
 
 fn color_sky(ray: Ray) -> ColorRGB
 {
-  return lerp(ColorRGB(0.0, 0.3, 0.4), ColorRGB(0.0, 0.01, 0.1), 0.5 * (ray.direction.y + 1.0));
+  return ColorRGB(0.04);
 }
 
 fn hit_sphere(sphere: Sphere, ray: Ray) -> RayHit
@@ -90,9 +89,4 @@ fn no_hit() -> RayHit
 fn ray_position(ray: Ray, t: f32) -> vec3f
 {
   return ray.origin + t * ray.direction;
-}
-
-fn lerp(a: vec3f, b: vec3f, t: f32) -> vec3f
-{
-  return (1.0 - t) * a + t * b;
 }
