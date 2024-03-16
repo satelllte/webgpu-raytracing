@@ -132,7 +132,7 @@ const useVariables = (): {light: Light; materials: Material[]} => {
     },
     material1: {
       label: 'Material 1',
-      value: '#801a33',
+      value: '#212d79',
     },
     material2: {
       label: 'Material 2',
