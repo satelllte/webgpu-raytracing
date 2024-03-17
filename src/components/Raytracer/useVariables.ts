@@ -23,83 +23,34 @@ export const useVariables = (): {
     sphere2Position,
   } = useControls({
     Light: folder({
-      lightPosition: {
-        label: 'Position',
-        value: [-4.8, 5.5, 0.0],
-        step: 0.1,
-      },
+      lightPosition: {...positionCommonProps, value: [-4.8, 5.5, 0.0]},
     }),
     Materials: folder({
       'Material 0': folder({
-        material0Color: {
-          label: 'Color',
-          value: '#212d79',
-        },
+        material0Color: {...colorCommonProps, value: '#212d79'},
       }),
       'Material 1': folder({
-        material1Color: {
-          label: 'Color',
-          value: '#1a8033',
-        },
+        material1Color: {...colorCommonProps, value: '#1a8033'},
       }),
       'Material 2': folder({
-        material2Color: {
-          label: 'Color',
-          value: '#901b90',
-        },
+        material2Color: {...colorCommonProps, value: '#901b90'},
       }),
     }),
     Spheres: folder({
       'Sphere 0': folder({
-        sphere0MaterialIndex: {
-          label: 'Material index',
-          value: 0,
-          step: 1,
-        },
-        sphere0Radius: {
-          label: 'Radius',
-          value: 0.8,
-          step: 0.1,
-        },
-        sphere0Position: {
-          label: 'Position',
-          value: [-0.2, 0.0, -4.1],
-          step: 0.1,
-        },
+        sphere0MaterialIndex: {...materialIndexCommonProps, value: 0},
+        sphere0Radius: {...radiusCommonProps, value: 0.8},
+        sphere0Position: {...positionCommonProps, value: [-0.2, 0.0, -4.1]},
       }),
       'Sphere 1': folder({
-        sphere1MaterialIndex: {
-          label: 'Material index',
-          value: 1,
-          step: 1,
-        },
-        sphere1Radius: {
-          label: 'Radius',
-          value: 1.1,
-          step: 0.1,
-        },
-        sphere1Position: {
-          label: 'Position',
-          value: [1.9, 0.1, -8.0],
-          step: 0.1,
-        },
+        sphere1MaterialIndex: {...materialIndexCommonProps, value: 1},
+        sphere1Radius: {...radiusCommonProps, value: 1.1},
+        sphere1Position: {...positionCommonProps, value: [1.9, 0.1, -8.0]},
       }),
       'Sphere 2': folder({
-        sphere2MaterialIndex: {
-          label: 'Material index',
-          value: 2,
-          step: 1,
-        },
-        sphere2Radius: {
-          label: 'Radius',
-          value: 1.0,
-          step: 0.1,
-        },
-        sphere2Position: {
-          label: 'Position',
-          value: [0.7, -0.4, -6.1],
-          step: 0.1,
-        },
+        sphere2MaterialIndex: {...materialIndexCommonProps, value: 2},
+        sphere2Radius: {...radiusCommonProps, value: 1.0},
+        sphere2Position: {...positionCommonProps, value: [0.7, -0.4, -6.1]},
       }),
     }),
   });
@@ -130,3 +81,22 @@ export const useVariables = (): {
     ],
   };
 };
+
+const positionCommonProps = {
+  label: 'Position',
+  step: 0.1,
+} as const;
+const colorCommonProps = {
+  label: 'Color',
+} as const;
+const materialIndexCommonProps = {
+  label: 'Material index',
+  min: 0,
+  max: 2,
+  step: 1,
+} as const;
+const radiusCommonProps = {
+  label: 'Radius',
+  min: 0.0,
+  step: 0.1,
+} as const;
