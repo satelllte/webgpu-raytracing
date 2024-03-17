@@ -28,7 +28,7 @@ fn fragment_main(@builtin(position) position: vec4f) -> @location(0) ColorRGBA
       -camera_focus_distance, // camera is looking into -z direction following a common right-handed coordinate system convention
     )),
   );
-  return ColorRGBA(color_pixel_n_samples(uv, camera_ray), 1.0);
+  return ColorRGBA(color_pixel_simultaneous_samples(uv, camera_ray), 1.0);
 }
 
 alias ColorRGB = vec3f;
@@ -42,7 +42,7 @@ struct Sphere { position: vec3f, radius: f32, material_index: f32 }
 struct Ray { origin: vec3f, direction: vec3f }
 struct RayHit { position: vec3f, normal: vec3f, distance: f32, index: i32 }
 
-fn color_pixel_n_samples(uv: vec2f, camera_ray: Ray) -> ColorRGB
+fn color_pixel_simultaneous_samples(uv: vec2f, camera_ray: Ray) -> ColorRGB
 {
   let samples_per_frame = settings.samples_per_frame;
   let fraction = 1.0 / samples_per_frame;
