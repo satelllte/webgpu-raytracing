@@ -41,8 +41,9 @@ struct RayHit { position: vec3f, normal: vec3f, t: f32 /* no hit when less than 
 
 /**
  * TODO: 
- * Fix the light going through spheres and lighting up the ones that stay behind,
+ * (1) Fix the light going through spheres and lighting up the ones that stay behind,
  * instead of having shadows on them.
+ * (2) Filter out spheres with negative radiuses, which are still displayed if that's the case
  */
 fn color_spheres(camera_ray: Ray) -> ColorRGB
 {
