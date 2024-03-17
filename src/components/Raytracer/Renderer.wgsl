@@ -46,13 +46,29 @@ struct RayHit { position: vec3f, normal: vec3f, distance: f32, index: i32 }
  */
 fn color(camera_ray: Ray) -> ColorRGB
 {
-  let hit = trace_ray(camera_ray);
-  if (hit.distance < 0.0 || hit.index < 0) { return color_background(); }
+  var ray = camera_ray;
+  var color = ColorRGB(0.0);
+  var multiplier = 1.0;
 
-  let sphere = spheres[hit.index];
-  let light_direction = normalize(light.position - hit.position);
-  let color = materials[u32(sphere.material_index)].color;
-  return color * max(dot(light_direction, hit.normal), 0.0);
+  let bounces: u32 = 4;
+  for (var i: u32 = 0; i < bounces; i++) {
+    let hit = trace_ray(ray);
+    if (hit.distance < 0.0 || hit.index < 0) {
+      color += multiplier * color_background();
+      break;
+    }
+
+    let light_direction = normalize(light.position - hit.position);
+    let light_intensity = max(dot(light_direction, hit.normal), 0.0);
+    let sphere = spheres[hit.index];
+    let sphere_color = materials[u32(sphere.material_index)].color;
+    color += sphere_color * light_intensity * multiplier;
+    multiplier *= 0.7;
+    ray.direction = reflect(ray.direction, hit.normal);
+    ray.origin = hit.position + ray.direction * 0.001;
+  }
+
+  return color;
 }
 
 fn color_background() -> ColorRGB

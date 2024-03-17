@@ -40,17 +40,17 @@ export const useVariables = (): {
       'Sphere 0': folder({
         sphere0MaterialIndex: {...materialIndexCommonProps, value: 0},
         sphere0Radius: {...radiusCommonProps, value: 0.8},
-        sphere0Position: {...positionCommonProps, value: [-0.2, 0.0, -4.1]},
+        sphere0Position: {...positionCommonProps, value: [-1.6, 0.7, -8.1]},
       }),
       'Sphere 1': folder({
         sphere1MaterialIndex: {...materialIndexCommonProps, value: 1},
-        sphere1Radius: {...radiusCommonProps, value: 1.1},
-        sphere1Position: {...positionCommonProps, value: [1.9, 0.1, -8.0]},
+        sphere1Radius: {...radiusCommonProps, value: 1.5},
+        sphere1Position: {...positionCommonProps, value: [2.9, 1.1, -10.0]},
       }),
       'Sphere 2': folder({
         sphere2MaterialIndex: {...materialIndexCommonProps, value: 2},
         sphere2Radius: {...radiusCommonProps, value: 1.0},
-        sphere2Position: {...positionCommonProps, value: [0.7, -0.4, -6.1]},
+        sphere2Position: {...positionCommonProps, value: [0.7, -0.4, -12.1]},
       }),
     }),
   });
