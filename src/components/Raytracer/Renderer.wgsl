@@ -28,29 +28,29 @@ fn fragment_main(@builtin(position) position: vec4f) -> @location(0) ColorRGBA
       -camera_focus_distance, // camera is looking into -z direction following a common right-handed coordinate system convention
     )),
   );
-  return ColorRGBA(color_accumulative(uv, camera_ray), 1.0);
+  return ColorRGBA(color_pixel_n_samples(uv, camera_ray), 1.0);
 }
 
 alias ColorRGB = vec3f;
 alias ColorRGBA = vec4f;
 
 struct Dimensions { width: f32, height: f32 }
-struct Settings { bounces: f32, samples: f32, seed: f32 }
+struct Settings { bounces: f32, samples_per_frame: f32, seed: f32 }
 struct Light { position: vec3f }
 struct Material { albedo: ColorRGB, roughness: f32 }
 struct Sphere { position: vec3f, radius: f32, material_index: f32 }
 struct Ray { origin: vec3f, direction: vec3f }
 struct RayHit { position: vec3f, normal: vec3f, distance: f32, index: i32 }
 
-fn color_accumulative(uv: vec2f, camera_ray: Ray) -> ColorRGB
+fn color_pixel_n_samples(uv: vec2f, camera_ray: Ray) -> ColorRGB
 {
-  let samples = settings.samples;
-  let fraction = 1.0 / samples;
-  var color_final = ColorRGB(0.0);
-  for (var i: u32 = 0; i < u32(samples); i++) {
-    color_final += color(uv * f32(i + 1) * 0.01, camera_ray) * fraction;
+  let samples_per_frame = settings.samples_per_frame;
+  let fraction = 1.0 / samples_per_frame;
+  var color = ColorRGB(0.0);
+  for (var i: u32 = 0; i < u32(samples_per_frame); i++) {
+    color += color_pixel(uv * f32(i + 1) * 0.01, camera_ray) * fraction;
   }
-  return color_final;
+  return color;
 }
 
 /**
@@ -59,7 +59,7 @@ fn color_accumulative(uv: vec2f, camera_ray: Ray) -> ColorRGB
  * instead of having shadows on them.
  * (2) Implement randomness in a better way to simulate roughness better.
  */
-fn color(uv: vec2f, camera_ray: Ray) -> ColorRGB
+fn color_pixel(uv: vec2f, camera_ray: Ray) -> ColorRGB
 {
   var ray = camera_ray;
   var color = ColorRGB(0.0);

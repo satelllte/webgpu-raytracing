@@ -58,7 +58,7 @@ export class Renderer {
   private get _settingsData(): Float32Array {
     return new Float32Array([
       this._settings ? this._settings.bounces : 0, /// bounces: f32 || TODO: figure out how to pass u32 properly instead
-      this._settings ? this._settings.samples : 1, /// samples: f32 || TODO: figure out how to pass u32 properly instead
+      this._settings ? this._settings.samplesPerFrame : 1, /// samples_per_frame: f32 || TODO: figure out how to pass u32 properly instead
       this._settings ? this._settings.seed : 0.1, /// seed: f32
       0.0, /// 4 bytes padding
     ]);
@@ -289,7 +289,7 @@ export class Renderer {
 
 export type Vector3 = [number, number, number];
 export type ColorRGB = Vector3;
-export type Settings = {bounces: number; samples: number; seed: number};
+export type Settings = {bounces: number; samplesPerFrame: number; seed: number};
 export type Light = {position: Vector3};
 export type Material = {albedo: ColorRGB; roughness: number};
 export type Sphere = {position: Vector3; radius: number; materialIndex: number};

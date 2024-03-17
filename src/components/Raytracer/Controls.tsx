@@ -1,4 +1,4 @@
-import {useControls, folder} from 'leva';
+import {useControls, folder, Leva} from 'leva';
 import {
   type Settings,
   type ColorRGB,
@@ -25,7 +25,7 @@ export function Controls({
   const controls = useControls({
     Settings: folder({
       bounces: {label: 'Bounces', value: 4, min: 1, step: 1},
-      samples: {label: 'Samples', value: 4, min: 1, step: 1},
+      samplesPerFrame: {label: 'Samples per frame', value: 4, min: 1, step: 1},
       seed: {label: 'Seed', value: 1.112, step: 0.0001},
       seedAuto: {label: 'Seed auto', value: true},
     }),
@@ -71,7 +71,7 @@ export function Controls({
   useEffect(() => {
     const {
       bounces,
-      samples,
+      samplesPerFrame,
       seed,
       seedAuto,
       lightPosition,
@@ -96,7 +96,7 @@ export function Controls({
     variablesRef.current = {
       settings: {
         bounces,
-        samples,
+        samplesPerFrame,
         seed,
         seedAuto,
       },
@@ -127,7 +127,7 @@ export function Controls({
     };
   }, [variablesRef, controls]);
 
-  return null;
+  return <Leva oneLineLabels />;
 }
 
 const positionCommonProps = {
