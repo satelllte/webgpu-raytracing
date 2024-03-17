@@ -1,7 +1,7 @@
 import {useEffect, useState} from 'react';
 import {Stat} from './Stat';
 
-export function StatFPS({
+export function StatsPerformance({
   running,
   frameTimeMsRef,
 }: {
@@ -21,10 +21,18 @@ export function StatFPS({
   }, [frameTimeMsRef]);
 
   if (!running || frameTimeMs === undefined) {
-    return <Stat variant='muted'>FPS: -</Stat>;
+    return (
+      <>
+        <Stat variant='muted'>Frame time: -</Stat>
+        <Stat variant='muted'>FPS: -</Stat>
+      </>
+    );
   }
 
   return (
-    <Stat variant='neutral'>{`FPS: ${Math.ceil(1000 / frameTimeMs)}`}</Stat>
+    <>
+      <Stat variant='neutral'>{`Frame time: ${frameTimeMs.toFixed(1)}ms`}</Stat>
+      <Stat variant='neutral'>{`FPS: ${Math.ceil(1000 / frameTimeMs)}`}</Stat>
+    </>
   );
 }
