@@ -12,8 +12,11 @@ export const useVariables = (): {
     bounces,
     lightPosition,
     material0Albedo,
+    material0Roughness,
     material1Albedo,
+    material1Roughness,
     material2Albedo,
+    material2Roughness,
     sphere0MaterialIndex,
     sphere0Radius,
     sphere0Position,
@@ -33,12 +36,15 @@ export const useVariables = (): {
     Materials: folder({
       'Material 0': folder({
         material0Albedo: {...albedoCommonProps, value: '#212d79'},
+        material0Roughness: {...roughnessCommonProps, value: 0.0},
       }),
       'Material 1': folder({
         material1Albedo: {...albedoCommonProps, value: '#1a8033'},
+        material1Roughness: {...roughnessCommonProps, value: 0.4},
       }),
       'Material 2': folder({
         material2Albedo: {...albedoCommonProps, value: '#901b90'},
+        material2Roughness: {...roughnessCommonProps, value: 0.99},
       }),
     }),
     Spheres: folder({
@@ -64,9 +70,9 @@ export const useVariables = (): {
     bounces,
     light: {position: lightPosition},
     materials: [
-      {albedo: hexToRgb01(material0Albedo)},
-      {albedo: hexToRgb01(material1Albedo)},
-      {albedo: hexToRgb01(material2Albedo)},
+      {albedo: hexToRgb01(material0Albedo), roughness: material0Roughness},
+      {albedo: hexToRgb01(material1Albedo), roughness: material1Roughness},
+      {albedo: hexToRgb01(material2Albedo), roughness: material2Roughness},
     ],
     spheres: [
       {
@@ -94,6 +100,12 @@ const positionCommonProps = {
 } as const;
 const albedoCommonProps = {
   label: 'Albedo',
+} as const;
+const roughnessCommonProps = {
+  label: 'Roughness',
+  min: 0,
+  max: 1,
+  step: 0.001,
 } as const;
 const materialIndexCommonProps = {
   label: 'Material index',

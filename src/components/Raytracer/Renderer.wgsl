@@ -27,7 +27,7 @@ fn fragment_main(@builtin(position) position: vec4f) -> @location(0) ColorRGBA
       -camera_focus_distance, // camera is looking into -z direction following a common right-handed coordinate system convention
     )),
   );
-  return ColorRGBA(color(camera_ray), 1.0);
+  return ColorRGBA(color(uv, camera_ray), 1.0);
 }
 
 alias ColorRGB = vec3f;
@@ -35,7 +35,7 @@ alias ColorRGBA = vec4f;
 
 struct Dimensions { width: f32, height: f32 }
 struct Light { position: vec3f }
-struct Material { albedo: ColorRGB }
+struct Material { albedo: ColorRGB, roughness: f32 }
 struct Sphere { position: vec3f, radius: f32, material_index: f32 }
 struct Ray { origin: vec3f, direction: vec3f }
 struct RayHit { position: vec3f, normal: vec3f, distance: f32, index: i32 }
@@ -44,8 +44,9 @@ struct RayHit { position: vec3f, normal: vec3f, distance: f32, index: i32 }
  * TODO: 
  * (1) Fix the light going through spheres and lighting up the ones that stay behind,
  * instead of having shadows on them.
+ * (2) Implement randomness in a better way to simulate roughness better.
  */
-fn color(camera_ray: Ray) -> ColorRGB
+fn color(uv: vec2f, camera_ray: Ray) -> ColorRGB
 {
   var ray = camera_ray;
   var color = ColorRGB(0.0);
@@ -61,10 +62,10 @@ fn color(camera_ray: Ray) -> ColorRGB
     let light_direction = normalize(light.position - hit.position);
     let light_intensity = max(dot(light_direction, hit.normal), 0.0);
     let sphere = spheres[hit.index];
-    let sphere_albedo = materials[u32(sphere.material_index)].albedo;
-    color += sphere_albedo * light_intensity * multiplier;
+    let material = materials[u32(sphere.material_index)];
+    color += material.albedo * light_intensity * multiplier;
     multiplier *= 0.7;
-    ray.direction = reflect(ray.direction, hit.normal);
+    ray.direction = normalize(reflect(ray.direction, hit.normal) + vec3f(rand22(uv * 1.1), rand22(uv * 1.2), rand22(uv * 1.3)) * material.roughness);
     ray.origin = hit.position + ray.direction * 0.001;
   }
 
@@ -73,7 +74,7 @@ fn color(camera_ray: Ray) -> ColorRGB
 
 fn color_background() -> ColorRGB
 {
-  return ColorRGB(0.04);
+  return ColorRGB(0.04, 0.2, 0.7);
 }
 
 fn trace_ray(ray: Ray) -> RayHit
@@ -120,4 +121,9 @@ fn no_hit() -> RayHit
 fn ray_position(ray: Ray, distance: f32) -> vec3f
 {
   return ray.origin + distance * ray.direction;
+}
+
+fn rand22(n: vec2f) -> f32
+{
+  return fract(sin(dot(n, vec2f(12.9898, 4.1414))) * 43758.5453);
 }
