@@ -86,7 +86,7 @@ export class Renderer {
 
     return new Float32Array(
       this._materials.flatMap((material) => [
-        ...material.color, /// color: ColorRGB
+        ...material.albedo, /// albedo: ColorRGB
         0.0, /// 4 bytes padding
       ]),
     );
@@ -258,5 +258,5 @@ export class Renderer {
 export type Vector3 = [number, number, number];
 export type ColorRGB = Vector3;
 export type Light = {position: Vector3};
-export type Material = {color: ColorRGB};
+export type Material = {albedo: ColorRGB};
 export type Sphere = {position: Vector3; radius: number; materialIndex: number};

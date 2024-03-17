@@ -35,7 +35,7 @@ alias ColorRGBA = vec4f;
 
 struct Dimensions { width: f32, height: f32 }
 struct Light { position: vec3f }
-struct Material { color: ColorRGB }
+struct Material { albedo: ColorRGB }
 struct Sphere { position: vec3f, radius: f32, material_index: f32 }
 struct Ray { origin: vec3f, direction: vec3f }
 struct RayHit { position: vec3f, normal: vec3f, distance: f32, index: i32 }
@@ -61,8 +61,8 @@ fn color(camera_ray: Ray) -> ColorRGB
     let light_direction = normalize(light.position - hit.position);
     let light_intensity = max(dot(light_direction, hit.normal), 0.0);
     let sphere = spheres[hit.index];
-    let sphere_color = materials[u32(sphere.material_index)].color;
-    color += sphere_color * light_intensity * multiplier;
+    let sphere_albedo = materials[u32(sphere.material_index)].albedo;
+    color += sphere_albedo * light_intensity * multiplier;
     multiplier *= 0.7;
     ray.direction = reflect(ray.direction, hit.normal);
     ray.origin = hit.position + ray.direction * 0.001;
