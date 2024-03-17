@@ -24,7 +24,8 @@ export function Controls({
 }) {
   const controls = useControls({
     Settings: folder({
-      bounces: {label: 'Bounces', value: 4, min: 0, step: 1},
+      bounces: {label: 'Bounces', value: 4, min: 1, step: 1},
+      samples: {label: 'Samples', value: 4, min: 1, step: 1},
       seed: {label: 'Seed', value: 1.112, step: 0.0001},
       seedAuto: {label: 'Seed auto', value: true},
     }),
@@ -70,6 +71,7 @@ export function Controls({
   useEffect(() => {
     const {
       bounces,
+      samples,
       seed,
       seedAuto,
       lightPosition,
@@ -94,6 +96,7 @@ export function Controls({
     variablesRef.current = {
       settings: {
         bounces,
+        samples,
         seed,
         seedAuto,
       },
