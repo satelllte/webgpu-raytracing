@@ -5,6 +5,7 @@ import {useWebGPUSupport} from './useWebGPUSupport';
 import {Button} from './Button';
 import {Canvas} from './Canvas';
 import {Renderer} from './Renderer';
+import {StatResolution} from './StatResolution';
 import {StatsPerformance} from './StatsPerformance';
 import {StatWebGPUSupport} from './StatWebGPUSupport';
 import {Controls, type Variables} from './Controls';
@@ -52,6 +53,7 @@ export function Raytracer() {
         <div className='flex flex-1 flex-col gap-2'>
           <h1 className='text-2xl underline'>WebGPU raytracer</h1>
           <StatWebGPUSupport supported={webGPUSupported} />
+          <StatResolution canvasRef={canvasRef} />
           <StatsPerformance running={running} frameTimeMsRef={frameTimeMsRef} />
         </div>
         <Button disabled={!webGPUSupported} onClick={toggleRun}>
