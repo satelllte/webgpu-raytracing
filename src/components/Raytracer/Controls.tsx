@@ -1,39 +1,27 @@
-import {folder, useControls} from 'leva';
+import {useControls, folder} from 'leva';
 import {
   type ColorRGB,
   type Light,
   type Material,
   type Sphere,
 } from './Renderer';
+import {useEffect} from 'react';
 import {hexToRgb01} from './utils';
 
-export const useVariables = (): {
+export type Variables = {
   bounces: number;
   light: Light;
   skyColor: ColorRGB;
   materials: Material[];
   spheres: Sphere[];
-} => {
-  const {
-    bounces,
-    lightPosition,
-    skyColor,
-    material0Albedo,
-    material0Roughness,
-    material1Albedo,
-    material1Roughness,
-    material2Albedo,
-    material2Roughness,
-    sphere0MaterialIndex,
-    sphere0Radius,
-    sphere0Position,
-    sphere1MaterialIndex,
-    sphere1Radius,
-    sphere1Position,
-    sphere2MaterialIndex,
-    sphere2Radius,
-    sphere2Position,
-  } = useControls({
+};
+
+export function Controls({
+  variablesRef,
+}: {
+  readonly variablesRef: React.MutableRefObject<Variables | undefined>;
+}) {
+  const controls = useControls({
     Bounces: folder({
       bounces: {label: 'Count', value: 4, min: 0, step: 1},
     }),
@@ -76,34 +64,59 @@ export const useVariables = (): {
     }),
   });
 
-  return {
-    bounces,
-    light: {position: lightPosition},
-    skyColor: hexToRgb01(skyColor),
-    materials: [
-      {albedo: hexToRgb01(material0Albedo), roughness: material0Roughness},
-      {albedo: hexToRgb01(material1Albedo), roughness: material1Roughness},
-      {albedo: hexToRgb01(material2Albedo), roughness: material2Roughness},
-    ],
-    spheres: [
-      {
-        materialIndex: sphere0MaterialIndex,
-        radius: sphere0Radius,
-        position: sphere0Position,
-      },
-      {
-        materialIndex: sphere1MaterialIndex,
-        radius: sphere1Radius,
-        position: sphere1Position,
-      },
-      {
-        materialIndex: sphere2MaterialIndex,
-        radius: sphere2Radius,
-        position: sphere2Position,
-      },
-    ],
-  };
-};
+  useEffect(() => {
+    const {
+      bounces,
+      lightPosition,
+      skyColor,
+      material0Albedo,
+      material0Roughness,
+      material1Albedo,
+      material1Roughness,
+      material2Albedo,
+      material2Roughness,
+      sphere0MaterialIndex,
+      sphere0Radius,
+      sphere0Position,
+      sphere1MaterialIndex,
+      sphere1Radius,
+      sphere1Position,
+      sphere2MaterialIndex,
+      sphere2Radius,
+      sphere2Position,
+    } = controls;
+
+    variablesRef.current = {
+      bounces,
+      light: {position: lightPosition},
+      skyColor: hexToRgb01(skyColor),
+      materials: [
+        {albedo: hexToRgb01(material0Albedo), roughness: material0Roughness},
+        {albedo: hexToRgb01(material1Albedo), roughness: material1Roughness},
+        {albedo: hexToRgb01(material2Albedo), roughness: material2Roughness},
+      ],
+      spheres: [
+        {
+          materialIndex: sphere0MaterialIndex,
+          radius: sphere0Radius,
+          position: sphere0Position,
+        },
+        {
+          materialIndex: sphere1MaterialIndex,
+          radius: sphere1Radius,
+          position: sphere1Position,
+        },
+        {
+          materialIndex: sphere2MaterialIndex,
+          radius: sphere2Radius,
+          position: sphere2Position,
+        },
+      ],
+    };
+  }, [variablesRef, controls]);
+
+  return null;
+}
 
 const positionCommonProps = {
   label: 'Position',

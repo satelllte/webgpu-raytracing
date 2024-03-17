@@ -1,24 +1,23 @@
 'use client';
 import {useEffect, useRef, useState} from 'react';
 import {useEffectEvent} from './useEffectEvent';
-import {useVariables} from './useVariables';
 import {useWebGPUSupport} from './useWebGPUSupport';
 import {Button} from './Button';
 import {Canvas} from './Canvas';
 import {Renderer} from './Renderer';
 import {StatsPerformance} from './StatsPerformance';
 import {StatWebGPUSupport} from './StatWebGPUSupport';
+import {Controls, type Variables} from './Controls';
 
 export function Raytracer() {
   const webGPUSupported = useWebGPUSupport();
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rendererRef = useRendererRef(canvasRef);
+  const variablesRef = useRef<Variables>();
   const frameTimeMsRef = useRef<number | undefined>();
 
   const [running, setRunning] = useState<boolean>(false);
-
-  const {bounces, light, skyColor, materials, spheres} = useVariables();
 
   useFrame(running, ({timeMs, deltaTimeMs}) => {
     frameTimeMsRef.current = deltaTimeMs;
@@ -26,6 +25,10 @@ export function Raytracer() {
     const renderer = rendererRef.current;
     if (!renderer) throw new Error('renderer ref is not set');
 
+    const variables = variablesRef.current;
+    if (!variables) throw new Error('variables ref is not set');
+
+    const {bounces, light, skyColor, materials, spheres} = variables;
     renderer.setBounces(bounces);
     renderer.setLight(light);
     renderer.setSkyColor(skyColor);
@@ -41,6 +44,7 @@ export function Raytracer() {
   return (
     <div className='absolute inset-0 flex flex-row'>
       <Canvas ref={canvasRef} />
+      <Controls variablesRef={variablesRef} />
       <div className='relative flex max-w-xs flex-1 flex-col gap-2 bg-black/50 p-4'>
         <div className='flex flex-1 flex-col gap-2'>
           <h1 className='text-2xl underline'>WebGPU raytracer</h1>
