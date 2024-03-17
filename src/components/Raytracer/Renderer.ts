@@ -94,7 +94,7 @@ export class Renderer {
 
     return new Float32Array(
       this._spheres.flatMap((sphere) => [
-        ...sphere.center, /// center: vec3f
+        ...sphere.position, /// position: vec3f
         sphere.radius, /// radius: f32
         sphere.materialIndex, /// material_index: f32 || TODO: figure out how to pass u32 properly instead
         0.0, /// 4 bytes padding
@@ -241,4 +241,4 @@ export type Vector3 = [number, number, number];
 export type ColorRGB = Vector3;
 export type Light = {position: Vector3};
 export type Material = {color: ColorRGB};
-export type Sphere = {center: Vector3; radius: number; materialIndex: number};
+export type Sphere = {position: Vector3; radius: number; materialIndex: number};

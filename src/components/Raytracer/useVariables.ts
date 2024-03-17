@@ -14,13 +14,13 @@ export const useVariables = (): {
     material2Color,
     sphere0MaterialIndex,
     sphere0Radius,
-    sphere0Center,
+    sphere0Position,
     sphere1MaterialIndex,
     sphere1Radius,
-    sphere1Center,
+    sphere1Position,
     sphere2MaterialIndex,
     sphere2Radius,
-    sphere2Center,
+    sphere2Position,
   } = useControls({
     Light: folder({
       lightPosition: {
@@ -61,8 +61,8 @@ export const useVariables = (): {
           value: 0.8,
           step: 0.1,
         },
-        sphere0Center: {
-          label: 'Center',
+        sphere0Position: {
+          label: 'Position',
           value: [-0.2, 0.0, -4.1],
           step: 0.1,
         },
@@ -78,8 +78,8 @@ export const useVariables = (): {
           value: 1.1,
           step: 0.1,
         },
-        sphere1Center: {
-          label: 'Center',
+        sphere1Position: {
+          label: 'Position',
           value: [1.9, 0.1, -8.0],
           step: 0.1,
         },
@@ -95,8 +95,8 @@ export const useVariables = (): {
           value: 1.0,
           step: 0.1,
         },
-        sphere2Center: {
-          label: 'Center',
+        sphere2Position: {
+          label: 'Position',
           value: [0.7, -0.4, -6.1],
           step: 0.1,
         },
@@ -115,17 +115,17 @@ export const useVariables = (): {
       {
         materialIndex: sphere0MaterialIndex,
         radius: sphere0Radius,
-        center: sphere0Center,
+        position: sphere0Position,
       },
       {
         materialIndex: sphere1MaterialIndex,
         radius: sphere1Radius,
-        center: sphere1Center,
+        position: sphere1Position,
       },
       {
         materialIndex: sphere2MaterialIndex,
         radius: sphere2Radius,
-        center: sphere2Center,
+        position: sphere2Position,
       },
     ],
   };

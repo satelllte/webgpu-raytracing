@@ -35,7 +35,7 @@ alias ColorRGBA = vec4f;
 struct Dimensions { width: f32, height: f32 }
 struct Light { position: vec3f }
 struct Material { color: ColorRGB }
-struct Sphere { center: vec3f, radius: f32, material_index: f32 }
+struct Sphere { position: vec3f, radius: f32, material_index: f32 }
 struct Ray { origin: vec3f, direction: vec3f /* normalized unit-vector */ }
 struct RayHit { position: vec3f, normal: vec3f, t: f32 /* no hit when less than 0 */ }
 
@@ -69,7 +69,7 @@ fn color_background() -> ColorRGB
 
 fn hit_sphere(sphere: Sphere, ray: Ray) -> RayHit
 {
-  let v = ray.origin - sphere.center;
+  let v = ray.origin - sphere.position;
   let a = dot(ray.direction, ray.direction);
   let b = dot(v, ray.direction);
   let c = dot(v, v) - sphere.radius * sphere.radius;
@@ -84,7 +84,7 @@ fn hit_sphere(sphere: Sphere, ray: Ray) -> RayHit
   if (t <= 0.0) { return no_hit(); }
 
   let position = ray_position(ray, t);
-  let normal = normalize((position - sphere.center) / sphere.radius);
+  let normal = normalize((position - sphere.position) / sphere.radius);
   return RayHit(position, normal, t);
 }
 
