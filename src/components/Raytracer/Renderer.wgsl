@@ -37,7 +37,7 @@ struct Light { position: vec3f }
 struct Material { color: ColorRGB }
 struct Sphere { position: vec3f, radius: f32, material_index: f32 }
 struct Ray { origin: vec3f, direction: vec3f /* normalized unit-vector */ }
-struct RayHit { position: vec3f, normal: vec3f, t: f32 /* no hit when less than 0 */ }
+struct RayHit { position: vec3f, normal: vec3f, distance: f32 /* no hit when less than 0 */ }
 
 /**
  * TODO: 
@@ -52,8 +52,8 @@ fn color_spheres(camera_ray: Ray) -> ColorRGB
   for (var i: u32 = 0; i < spheres_count; i++) {
     let sphere = spheres[i];
     let hit = hit_sphere(sphere, camera_ray);
-    if (hit.t <= 0.0) { continue; }
-    if (closest_hit.t >= 0 && closest_hit.t <= hit.t) { continue; }
+    if (hit.distance <= 0.0) { continue; }
+    if (closest_hit.distance >= 0 && closest_hit.distance < hit.distance) { continue; }
     closest_hit = hit;
     closest_sphere_index = i32(i);
   }
@@ -86,20 +86,20 @@ fn hit_sphere(sphere: Sphere, ray: Ray) -> RayHit
   let sqrt_d = sqrt(d);
   let t1 = (-b - sqrt_d) / a;
   let t2 = (-b + sqrt_d) / a;
-  let t = select(t2, t1, t1 > 0.0);
-  if (t <= 0.0) { return no_hit(); }
+  let distance = select(t2, t1, t1 > 0.0);
+  if (distance <= 0.0) { return no_hit(); }
 
-  let position = ray_position(ray, t);
+  let position = ray_position(ray, distance);
   let normal = normalize((position - sphere.position) / sphere.radius);
-  return RayHit(position, normal, t);
+  return RayHit(position, normal, distance);
 }
 
 fn no_hit() -> RayHit
 {
-  return RayHit(/* position */vec3f(0.0), /* normal */vec3f(0.0), /* t */-1.0);
+  return RayHit(/* position */vec3f(0.0), /* normal */vec3f(0.0), /* distance */-1.0);
 }
 
-fn ray_position(ray: Ray, t: f32) -> vec3f
+fn ray_position(ray: Ray, distance: f32) -> vec3f
 {
-  return ray.origin + t * ray.direction;
+  return ray.origin + distance * ray.direction;
 }
