@@ -39,6 +39,11 @@ struct Sphere { position: vec3f, radius: f32, material_index: f32 }
 struct Ray { origin: vec3f, direction: vec3f /* normalized unit-vector */ }
 struct RayHit { position: vec3f, normal: vec3f, t: f32 /* no hit when less than 0 */ }
 
+/**
+ * TODO: 
+ * Fix the light going through spheres and lighting up the ones that stay behind,
+ * instead of having shadows on them.
+ */
 fn color_spheres(camera_ray: Ray) -> ColorRGB
 {
   let spheres_count = arrayLength(&spheres);
