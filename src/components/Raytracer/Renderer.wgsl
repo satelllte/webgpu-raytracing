@@ -26,7 +26,7 @@ fn fragment_main(@builtin(position) position: vec4f) -> @location(0) ColorRGBA
       -camera_focus_distance, // camera is looking into -z direction following a common right-handed coordinate system convention
     )),
   );
-  return ColorRGBA(color_spheres(camera_ray), 1.0);
+  return ColorRGBA(color(camera_ray), 1.0);
 }
 
 alias ColorRGB = vec3f;
@@ -36,32 +36,20 @@ struct Dimensions { width: f32, height: f32 }
 struct Light { position: vec3f }
 struct Material { color: ColorRGB }
 struct Sphere { position: vec3f, radius: f32, material_index: f32 }
-struct Ray { origin: vec3f, direction: vec3f /* normalized unit-vector */ }
-struct RayHit { position: vec3f, normal: vec3f, distance: f32 /* no hit when less than 0 */ }
+struct Ray { origin: vec3f, direction: vec3f }
+struct RayHit { position: vec3f, normal: vec3f, distance: f32, index: i32 }
 
 /**
  * TODO: 
  * (1) Fix the light going through spheres and lighting up the ones that stay behind,
  * instead of having shadows on them.
  */
-fn color_spheres(camera_ray: Ray) -> ColorRGB
+fn color(camera_ray: Ray) -> ColorRGB
 {
-  let spheres_count = arrayLength(&spheres);
-  var closest_hit = no_hit();
-  var closest_sphere_index = -1;
-  for (var i: u32 = 0; i < spheres_count; i++) {
-    let sphere = spheres[i];
-    let hit = hit_sphere(sphere, camera_ray);
-    if (hit.distance <= 0.0) { continue; }
-    if (closest_hit.distance >= 0 && closest_hit.distance < hit.distance) { continue; }
-    closest_hit = hit;
-    closest_sphere_index = i32(i);
-  }
+  let hit = trace_ray(camera_ray);
+  if (hit.distance < 0.0 || hit.index < 0) { return color_background(); }
 
-  if (closest_sphere_index < 0) { return color_background(); }
-
-  let sphere = spheres[closest_sphere_index];
-  let hit = closest_hit;
+  let sphere = spheres[hit.index];
   let light_direction = normalize(light.position - hit.position);
   let color = materials[u32(sphere.material_index)].color;
   return color * max(dot(light_direction, hit.normal), 0.0);
@@ -72,8 +60,26 @@ fn color_background() -> ColorRGB
   return ColorRGB(0.04);
 }
 
-fn hit_sphere(sphere: Sphere, ray: Ray) -> RayHit
+fn trace_ray(ray: Ray) -> RayHit
 {
+  var closest_hit = no_hit();
+  var closest_sphere_index = -1;
+  
+  let spheres_count = i32(arrayLength(&spheres));
+  for (var index: i32 = 0; index < spheres_count; index++) {
+    let hit = hit_sphere(index, ray);
+    if (hit.distance <= 0.0) { continue; }
+    if (closest_hit.distance >= 0 && closest_hit.distance < hit.distance) { continue; }
+    closest_hit = hit;
+    closest_sphere_index = index;
+  }
+
+  return closest_hit;
+}
+
+fn hit_sphere(index: i32, ray: Ray) -> RayHit
+{
+  let sphere = spheres[index];
   if (sphere.radius <= 0.0) { return no_hit(); }
 
   let v = ray.origin - sphere.position;
@@ -91,12 +97,12 @@ fn hit_sphere(sphere: Sphere, ray: Ray) -> RayHit
 
   let position = ray_position(ray, distance);
   let normal = normalize((position - sphere.position) / sphere.radius);
-  return RayHit(position, normal, distance);
+  return RayHit(position, normal, distance, index);
 }
 
 fn no_hit() -> RayHit
 {
-  return RayHit(/* position */vec3f(0.0), /* normal */vec3f(0.0), /* distance */-1.0);
+  return RayHit(/* position */vec3f(0.0), /* normal */vec3f(0.0), /* distance */-1.0, /* index */-1);
 }
 
 fn ray_position(ray: Ray, distance: f32) -> vec3f
