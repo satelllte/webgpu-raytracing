@@ -14,7 +14,7 @@ export function StatResolution({
       if (!canvas) return;
 
       setResolution([canvas.width, canvas.height]);
-    }, 200);
+    }, 500);
 
     return () => {
       clearInterval(intervalId);
