@@ -2,7 +2,6 @@ import {useControls, folder, Leva} from 'leva';
 import {
   type Settings,
   type ColorRGB,
-  type Light,
   type Material,
   type Sphere,
 } from './Renderer';
@@ -11,7 +10,6 @@ import {hexToRgb01} from './utils';
 
 export type Variables = {
   settings: Settings & {seedAuto: boolean};
-  light: Light;
   skyColor: ColorRGB;
   materials: Material[];
   spheres: Sphere[];
@@ -28,7 +26,7 @@ export function Controls({
 }) {
   const controls = useControls({
     Settings: folder({
-      bounces: {label: 'Bounces', value: 4, min: 1, step: 1},
+      bounces: {label: 'Bounces', value: 8, min: 1, step: 1},
       samplesPerFrame: {label: 'Samples per frame', value: 4, min: 1, step: 1},
       seed: {label: 'Seed', value: 1.112, step: 0.0001},
       seedAuto: {label: 'Seed auto', value: true},
@@ -40,24 +38,27 @@ export function Controls({
         step: 0.01,
       },
     }),
-    Light: folder({
-      lightPosition: {...positionCommonProps, value: [-4.8, 5.5, 0.0]},
-    }),
     Sky: folder({
-      skyColor: {...colorCommonProps, value: '#060f2a'},
+      skyColor: {...colorCommonProps, value: '#000000'},
     }),
     Materials: folder({
       'Material 0': folder({
         material0Albedo: {...albedoCommonProps, value: '#212d79'},
-        material0Roughness: {...roughnessCommonProps, value: 0.07},
+        material0Roughness: {...roughnessCommonProps, value: 1.0},
+        material0EmissionColor: {...emissionColorCommonProps, value: '#21bd79'},
+        material0EmissionPower: {...emissionPowerCommonProps, value: 0.0},
       }),
       'Material 1': folder({
         material1Albedo: {...albedoCommonProps, value: '#1a8033'},
-        material1Roughness: {...roughnessCommonProps, value: 0.0},
+        material1Roughness: {...roughnessCommonProps, value: 0.7},
+        material1EmissionColor: {...emissionColorCommonProps, value: '#760000'},
+        material1EmissionPower: {...emissionPowerCommonProps, value: 0.8},
       }),
       'Material 2': folder({
         material2Albedo: {...albedoCommonProps, value: '#901b90'},
-        material2Roughness: {...roughnessCommonProps, value: 0.0},
+        material2Roughness: {...roughnessCommonProps, value: 0.19},
+        material2EmissionColor: {...emissionColorCommonProps, value: '#101b90'},
+        material2EmissionPower: {...emissionPowerCommonProps, value: 0.0},
       }),
     }),
     Spheres: folder({
@@ -68,13 +69,13 @@ export function Controls({
       }),
       'Sphere 1': folder({
         sphere1MaterialIndex: {...materialIndexCommonProps, value: 1},
-        sphere1Radius: {...radiusCommonProps, value: 1.5},
-        sphere1Position: {...positionCommonProps, value: [2.9, 1.1, -6.0]},
+        sphere1Radius: {...radiusCommonProps, value: 4.7},
+        sphere1Position: {...positionCommonProps, value: [7.4, 3.4, -11.0]},
       }),
       'Sphere 2': folder({
         sphere2MaterialIndex: {...materialIndexCommonProps, value: 2},
         sphere2Radius: {...radiusCommonProps, value: 1.0},
-        sphere2Position: {...positionCommonProps, value: [-1.0, 0.8, -6.8]},
+        sphere2Position: {...positionCommonProps, value: [1.4, -0.5, -4.8]},
       }),
     }),
   });
@@ -86,14 +87,19 @@ export function Controls({
       seed,
       seedAuto,
       resolutionScale,
-      lightPosition,
       skyColor,
       material0Albedo,
       material0Roughness,
+      material0EmissionColor,
+      material0EmissionPower,
       material1Albedo,
       material1Roughness,
+      material1EmissionColor,
+      material1EmissionPower,
       material2Albedo,
       material2Roughness,
+      material2EmissionColor,
+      material2EmissionPower,
       sphere0MaterialIndex,
       sphere0Radius,
       sphere0Position,
@@ -112,12 +118,26 @@ export function Controls({
         seed,
         seedAuto,
       },
-      light: {position: lightPosition},
       skyColor: hexToRgb01(skyColor),
       materials: [
-        {albedo: hexToRgb01(material0Albedo), roughness: material0Roughness},
-        {albedo: hexToRgb01(material1Albedo), roughness: material1Roughness},
-        {albedo: hexToRgb01(material2Albedo), roughness: material2Roughness},
+        {
+          albedo: hexToRgb01(material0Albedo),
+          roughness: material0Roughness,
+          emissionColor: hexToRgb01(material0EmissionColor),
+          emissionPower: material0EmissionPower,
+        },
+        {
+          albedo: hexToRgb01(material1Albedo),
+          roughness: material1Roughness,
+          emissionColor: hexToRgb01(material1EmissionColor),
+          emissionPower: material1EmissionPower,
+        },
+        {
+          albedo: hexToRgb01(material2Albedo),
+          roughness: material2Roughness,
+          emissionColor: hexToRgb01(material2EmissionColor),
+          emissionPower: material2EmissionPower,
+        },
       ],
       spheres: [
         {
@@ -158,6 +178,14 @@ const roughnessCommonProps = {
   label: 'Roughness',
   min: 0,
   max: 1,
+  step: 0.001,
+} as const;
+const emissionColorCommonProps = {
+  label: 'Emission color',
+} as const;
+const emissionPowerCommonProps = {
+  label: 'Emission power',
+  min: 0,
   step: 0.001,
 } as const;
 const materialIndexCommonProps = {

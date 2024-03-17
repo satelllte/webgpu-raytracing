@@ -1,9 +1,8 @@
 @group(0) @binding(0) var<uniform> dimensions: Dimensions;
 @group(0) @binding(1) var<uniform> settings: Settings;
-@group(0) @binding(2) var<uniform> light: Light;
-@group(0) @binding(3) var<uniform> sky_color: ColorRGB;
-@group(0) @binding(4) var<storage> materials: array<Material>;
-@group(0) @binding(5) var<storage> spheres: array<Sphere>;
+@group(0) @binding(2) var<uniform> sky_color: ColorRGB;
+@group(0) @binding(3) var<storage> materials: array<Material>;
+@group(0) @binding(4) var<storage> spheres: array<Sphere>;
 
 @vertex
 fn vertex_main(@location(0) position: vec4f) -> @builtin(position) vec4f
@@ -37,8 +36,7 @@ alias ColorRGBA = vec4f;
 
 struct Dimensions { width: f32, height: f32 }
 struct Settings { bounces: f32, samples_per_frame: f32, seed: f32 }
-struct Light { position: vec3f }
-struct Material { albedo: ColorRGB, roughness: f32 }
+struct Material { albedo: ColorRGB, roughness: f32, emission_color: ColorRGB, emission_power: f32 }
 struct Sphere { position: vec3f, radius: f32, material_index: f32 }
 struct Ray { origin: vec3f, direction: vec3f }
 struct RayHit { position: vec3f, normal: vec3f, distance: f32, index: i32 }
@@ -62,28 +60,25 @@ fn color_pixel_simultaneous_samples(seed_xy: vec2f, camera_ray: Ray) -> ColorRGB
 fn color_pixel(seed_xy: vec2f, camera_ray: Ray) -> ColorRGB
 {
   var ray = camera_ray;
-  var color = ColorRGB(0.0);
-  var multiplier = 1.0;
-
+  var light = ColorRGB(0.0);
+  var light_contribution = ColorRGB(1.0);
   let bounces = u32(settings.bounces);
   for (var i: u32 = 0; i < bounces; i++) {
     let hit = trace_ray(ray);
     if (hit.distance < 0.0 || hit.index < 0) {
-      color += multiplier * sky_color;
+      light += light_contribution * sky_color;
       break;
     }
 
-    let light_direction = normalize(light.position - hit.position);
-    let light_intensity = max(dot(light_direction, hit.normal), 0.0);
     let sphere = spheres[hit.index];
     let material = materials[u32(sphere.material_index)];
-    color += material.albedo * light_intensity * multiplier;
-    multiplier *= 0.7;
+    light += material.emission_color * material.emission_power;
+    light_contribution *= material.albedo;
     ray.direction = normalize(reflect(ray.direction, hit.normal) + rand_vec3(seed_xy) * material.roughness);
-    ray.origin = hit.position + ray.direction * 0.001;
+    ray.origin = hit.position + ray.direction * 0.0001;
   }
 
-  return color;
+  return light;
 }
 
 fn trace_ray(ray: Ray) -> RayHit
