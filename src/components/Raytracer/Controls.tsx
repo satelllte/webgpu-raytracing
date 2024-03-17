@@ -26,7 +26,7 @@ export function Controls({
     Settings: folder({
       bounces: {label: 'Bounces', value: 4, min: 0, step: 1},
       seed: {label: 'Seed', value: 1.112, step: 0.0001},
-      seedAuto: {label: 'Seed auto', value: false},
+      seedAuto: {label: 'Seed auto', value: true},
     }),
     Light: folder({
       lightPosition: {...positionCommonProps, value: [-4.8, 5.5, 0.0]},
