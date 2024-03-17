@@ -18,7 +18,7 @@ export function Raytracer() {
 
   const [running, setRunning] = useState<boolean>(false);
 
-  const {light, materials, spheres} = useVariables();
+  const {bounces, light, materials, spheres} = useVariables();
 
   useFrame(running, ({timeMs, deltaTimeMs}) => {
     frameTimeMsRef.current = deltaTimeMs;
@@ -26,6 +26,7 @@ export function Raytracer() {
     const renderer = rendererRef.current;
     if (!renderer) throw new Error('renderer ref is not set');
 
+    renderer.setBounces(bounces);
     renderer.setLight(light);
     renderer.setMaterials(materials);
     renderer.setSpheres(spheres);

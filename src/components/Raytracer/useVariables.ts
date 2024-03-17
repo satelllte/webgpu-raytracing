@@ -3,11 +3,13 @@ import {type Light, type Material, type Sphere} from './Renderer';
 import {hexToRgb01} from './utils';
 
 export const useVariables = (): {
+  bounces: number;
   light: Light;
   materials: Material[];
   spheres: Sphere[];
 } => {
   const {
+    bounces,
     lightPosition,
     material0Color,
     material1Color,
@@ -22,6 +24,9 @@ export const useVariables = (): {
     sphere2Radius,
     sphere2Position,
   } = useControls({
+    Bounces: folder({
+      bounces: {label: 'Count', value: 4, min: 0, step: 1},
+    }),
     Light: folder({
       lightPosition: {...positionCommonProps, value: [-4.8, 5.5, 0.0]},
     }),
@@ -56,6 +61,7 @@ export const useVariables = (): {
   });
 
   return {
+    bounces,
     light: {position: lightPosition},
     materials: [
       {color: hexToRgb01(material0Color)},

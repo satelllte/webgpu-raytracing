@@ -23,6 +23,7 @@ export class Renderer {
   private _device: GPUDevice | undefined;
   private _preferredCanvasFormat: GPUTextureFormat | undefined;
 
+  private _bounces = 1;
   private _light: Light | undefined;
   private _materials: Material[] = [];
   private _spheres: Sphere[] = [];
@@ -47,6 +48,14 @@ export class Renderer {
     this._context = undefined;
     this._device = undefined;
     this._preferredCanvasFormat = undefined;
+  }
+
+  public setBounces(bounces: number): void {
+    this._bounces = bounces;
+  }
+
+  private get _bouncesData(): Uint32Array {
+    return new Uint32Array([this._bounces]);
   }
 
   public setLight(light: Light): void {
@@ -174,6 +183,13 @@ export class Renderer {
       usage: usageUniform,
     });
 
+    const bouncesData = this._bouncesData;
+    const bouncesBuffer = device.createBuffer({
+      label: 'bounces buffer',
+      size: bouncesData.byteLength,
+      usage: usageUniform,
+    });
+
     const lightData = this._lightData;
     const lightBuffer = device.createBuffer({
       label: 'light buffer',
@@ -200,9 +216,10 @@ export class Renderer {
       layout: renderPipeline.getBindGroupLayout(0),
       entries: [
         {binding: 0, resource: {buffer: dimensionsBuffer}},
-        {binding: 1, resource: {buffer: lightBuffer}},
-        {binding: 2, resource: {buffer: materialsBuffer}},
-        {binding: 3, resource: {buffer: spheresBuffer}},
+        {binding: 1, resource: {buffer: bouncesBuffer}},
+        {binding: 2, resource: {buffer: lightBuffer}},
+        {binding: 3, resource: {buffer: materialsBuffer}},
+        {binding: 4, resource: {buffer: spheresBuffer}},
       ],
     });
 
@@ -229,6 +246,7 @@ export class Renderer {
 
     device.queue.writeBuffer(verticesBuffer, 0, verticesData);
     device.queue.writeBuffer(dimensionsBuffer, 0, dimensionsData);
+    device.queue.writeBuffer(bouncesBuffer, 0, bouncesData);
     device.queue.writeBuffer(lightBuffer, 0, lightData);
     device.queue.writeBuffer(materialsBuffer, 0, materialsData);
     device.queue.writeBuffer(spheresBuffer, 0, spheresData);
