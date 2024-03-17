@@ -1,8 +1,9 @@
 @group(0) @binding(0) var<uniform> dimensions: Dimensions;
 @group(0) @binding(1) var<uniform> bounces: u32;
 @group(0) @binding(2) var<uniform> light: Light;
-@group(0) @binding(3) var<storage> materials: array<Material>;
-@group(0) @binding(4) var<storage> spheres: array<Sphere>;
+@group(0) @binding(3) var<uniform> sky_color: ColorRGB;
+@group(0) @binding(4) var<storage> materials: array<Material>;
+@group(0) @binding(5) var<storage> spheres: array<Sphere>;
 
 @vertex
 fn vertex_main(@location(0) position: vec4f) -> @builtin(position) vec4f
@@ -55,7 +56,7 @@ fn color(uv: vec2f, camera_ray: Ray) -> ColorRGB
   for (var i: u32 = 0; i < bounces; i++) {
     let hit = trace_ray(ray);
     if (hit.distance < 0.0 || hit.index < 0) {
-      color += multiplier * color_background();
+      color += multiplier * sky_color;
       break;
     }
 
@@ -70,11 +71,6 @@ fn color(uv: vec2f, camera_ray: Ray) -> ColorRGB
   }
 
   return color;
-}
-
-fn color_background() -> ColorRGB
-{
-  return ColorRGB(0.04, 0.2, 0.7);
 }
 
 fn trace_ray(ray: Ray) -> RayHit

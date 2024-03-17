@@ -1,16 +1,23 @@
 import {folder, useControls} from 'leva';
-import {type Light, type Material, type Sphere} from './Renderer';
+import {
+  type ColorRGB,
+  type Light,
+  type Material,
+  type Sphere,
+} from './Renderer';
 import {hexToRgb01} from './utils';
 
 export const useVariables = (): {
   bounces: number;
   light: Light;
+  skyColor: ColorRGB;
   materials: Material[];
   spheres: Sphere[];
 } => {
   const {
     bounces,
     lightPosition,
+    skyColor,
     material0Albedo,
     material0Roughness,
     material1Albedo,
@@ -33,18 +40,21 @@ export const useVariables = (): {
     Light: folder({
       lightPosition: {...positionCommonProps, value: [-4.8, 5.5, 0.0]},
     }),
+    Sky: folder({
+      skyColor: {...colorCommonProps, value: '#060f2a'},
+    }),
     Materials: folder({
       'Material 0': folder({
         material0Albedo: {...albedoCommonProps, value: '#212d79'},
-        material0Roughness: {...roughnessCommonProps, value: 0.0},
+        material0Roughness: {...roughnessCommonProps, value: 0.07},
       }),
       'Material 1': folder({
         material1Albedo: {...albedoCommonProps, value: '#1a8033'},
-        material1Roughness: {...roughnessCommonProps, value: 0.4},
+        material1Roughness: {...roughnessCommonProps, value: 0.0},
       }),
       'Material 2': folder({
         material2Albedo: {...albedoCommonProps, value: '#901b90'},
-        material2Roughness: {...roughnessCommonProps, value: 0.99},
+        material2Roughness: {...roughnessCommonProps, value: 0.0},
       }),
     }),
     Spheres: folder({
@@ -69,6 +79,7 @@ export const useVariables = (): {
   return {
     bounces,
     light: {position: lightPosition},
+    skyColor: hexToRgb01(skyColor),
     materials: [
       {albedo: hexToRgb01(material0Albedo), roughness: material0Roughness},
       {albedo: hexToRgb01(material1Albedo), roughness: material1Roughness},
@@ -97,6 +108,9 @@ export const useVariables = (): {
 const positionCommonProps = {
   label: 'Position',
   step: 0.1,
+} as const;
+const colorCommonProps = {
+  label: 'Color',
 } as const;
 const albedoCommonProps = {
   label: 'Albedo',

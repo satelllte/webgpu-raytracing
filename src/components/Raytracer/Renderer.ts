@@ -25,6 +25,7 @@ export class Renderer {
 
   private _bounces = 1;
   private _light: Light | undefined;
+  private _skyColor: ColorRGB | undefined;
   private _materials: Material[] = [];
   private _spheres: Sphere[] = [];
 
@@ -71,6 +72,23 @@ export class Renderer {
       this._light.position[0], /// position: vec3f (0)
       this._light.position[1], /// position: vec3f (1)
       this._light.position[2], /// position: vec3f (2)
+      0.0, /// 4 bytes padding
+    ]);
+  }
+
+  public setSkyColor(skyColor: ColorRGB): void {
+    this._skyColor = skyColor;
+  }
+
+  private get _skyColorData(): Float32Array {
+    if (!this._skyColor) {
+      return new Float32Array([0.0, 0.0, 0.0, 0.0]); // Minimum binding size is 16 bytes, so passing a single "void" one
+    }
+
+    return new Float32Array([
+      this._skyColor[0], /// ColorRGB (0)
+      this._skyColor[1], /// ColorRGB (1)
+      this._skyColor[2], /// ColorRGB (2)
       0.0, /// 4 bytes padding
     ]);
   }
@@ -197,6 +215,13 @@ export class Renderer {
       usage: usageUniform,
     });
 
+    const skyColorData = this._skyColorData;
+    const skyColorBuffer = device.createBuffer({
+      label: 'sky color buffer',
+      size: skyColorData.byteLength,
+      usage: usageUniform,
+    });
+
     const materialsData = this._materialsData;
     const materialsBuffer = device.createBuffer({
       label: 'materials buffer',
@@ -218,8 +243,9 @@ export class Renderer {
         {binding: 0, resource: {buffer: dimensionsBuffer}},
         {binding: 1, resource: {buffer: bouncesBuffer}},
         {binding: 2, resource: {buffer: lightBuffer}},
-        {binding: 3, resource: {buffer: materialsBuffer}},
-        {binding: 4, resource: {buffer: spheresBuffer}},
+        {binding: 3, resource: {buffer: skyColorBuffer}},
+        {binding: 4, resource: {buffer: materialsBuffer}},
+        {binding: 5, resource: {buffer: spheresBuffer}},
       ],
     });
 
@@ -248,6 +274,7 @@ export class Renderer {
     device.queue.writeBuffer(dimensionsBuffer, 0, dimensionsData);
     device.queue.writeBuffer(bouncesBuffer, 0, bouncesData);
     device.queue.writeBuffer(lightBuffer, 0, lightData);
+    device.queue.writeBuffer(skyColorBuffer, 0, skyColorData);
     device.queue.writeBuffer(materialsBuffer, 0, materialsData);
     device.queue.writeBuffer(spheresBuffer, 0, spheresData);
 
