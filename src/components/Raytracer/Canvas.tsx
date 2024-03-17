@@ -5,10 +5,12 @@ type NativeCanvasPropsToExtend = Omit<
   NativeCanvasProps,
   'className' | 'children'
 >;
-type CanvasProps = NativeCanvasPropsToExtend;
+type CanvasProps = NativeCanvasPropsToExtend & {
+  readonly resolutionScale: number;
+};
 
 export const Canvas = forwardRef<HTMLCanvasElement, CanvasProps>(
-  (props, forwardedRef) => {
+  ({resolutionScale, ...rest}, forwardedRef) => {
     const innerRef = useRef<React.ElementRef<'canvas'>>(null);
 
     useImperativeHandle(forwardedRef, () => {
@@ -22,7 +24,7 @@ export const Canvas = forwardRef<HTMLCanvasElement, CanvasProps>(
 
       const resizeCanvas = () => {
         const {width, height} = canvas.getBoundingClientRect();
-        const scale = Math.max(window.devicePixelRatio, 1);
+        const scale = Math.max(window.devicePixelRatio, 1) * resolutionScale;
         canvas.width = Math.floor(width * scale);
         canvas.height = Math.floor(height * scale);
       };
@@ -37,10 +39,10 @@ export const Canvas = forwardRef<HTMLCanvasElement, CanvasProps>(
       return () => {
         window.removeEventListener('resize', resizeCanvas);
       };
-    }, []);
+    }, [resolutionScale]);
 
     return (
-      <canvas ref={innerRef} className='absolute h-full w-full' {...props}>
+      <canvas ref={innerRef} className='absolute h-full w-full' {...rest}>
         HTML canvas is not supported in this browser
       </canvas>
     );

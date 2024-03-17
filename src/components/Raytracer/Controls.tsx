@@ -19,8 +19,12 @@ export type Variables = {
 
 export function Controls({
   variablesRef,
+  resolutionScale,
+  setResolutionScale,
 }: {
   readonly variablesRef: React.MutableRefObject<Variables | undefined>;
+  readonly resolutionScale: number;
+  readonly setResolutionScale: (resolutionScale: number) => void;
 }) {
   const controls = useControls({
     Settings: folder({
@@ -28,6 +32,13 @@ export function Controls({
       samplesPerFrame: {label: 'Samples per frame', value: 4, min: 1, step: 1},
       seed: {label: 'Seed', value: 1.112, step: 0.0001},
       seedAuto: {label: 'Seed auto', value: true},
+      resolutionScale: {
+        label: 'Resolution scale',
+        value: resolutionScale,
+        min: 0.01,
+        max: 1.0,
+        step: 0.01,
+      },
     }),
     Light: folder({
       lightPosition: {...positionCommonProps, value: [-4.8, 5.5, 0.0]},
@@ -74,6 +85,7 @@ export function Controls({
       samplesPerFrame,
       seed,
       seedAuto,
+      resolutionScale,
       lightPosition,
       skyColor,
       material0Albedo,
@@ -125,7 +137,9 @@ export function Controls({
         },
       ],
     };
-  }, [variablesRef, controls]);
+
+    setResolutionScale(resolutionScale);
+  }, [variablesRef, setResolutionScale, controls]);
 
   return <Leva oneLineLabels />;
 }

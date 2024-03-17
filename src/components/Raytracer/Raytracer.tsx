@@ -18,6 +18,7 @@ export function Raytracer() {
   const variablesRef = useRef<Variables>();
   const frameTimeMsRef = useRef<number | undefined>();
 
+  const [resolutionScale, setResolutionScale] = useState<number>(1.0);
   const [running, setRunning] = useState<boolean>(false);
 
   useFrame(running, ({timeMs, deltaTimeMs}) => {
@@ -47,8 +48,12 @@ export function Raytracer() {
 
   return (
     <div className='absolute inset-0 flex flex-row'>
-      <Canvas ref={canvasRef} />
-      <Controls variablesRef={variablesRef} />
+      <Canvas ref={canvasRef} resolutionScale={resolutionScale} />
+      <Controls
+        variablesRef={variablesRef}
+        resolutionScale={resolutionScale}
+        setResolutionScale={setResolutionScale}
+      />
       <div className='relative flex max-w-xs flex-1 flex-col gap-2 bg-black/50 p-4'>
         <div className='flex flex-1 flex-col gap-2'>
           <h1 className='text-2xl underline'>WebGPU raytracer</h1>
