@@ -63,17 +63,13 @@ fn color_background() -> ColorRGB
 fn trace_ray(ray: Ray) -> RayHit
 {
   var closest_hit = no_hit();
-  var closest_sphere_index = -1;
-  
   let spheres_count = i32(arrayLength(&spheres));
   for (var index: i32 = 0; index < spheres_count; index++) {
     let hit = hit_sphere(index, ray);
     if (hit.distance <= 0.0) { continue; }
     if (closest_hit.distance >= 0 && closest_hit.distance < hit.distance) { continue; }
     closest_hit = hit;
-    closest_sphere_index = index;
   }
-
   return closest_hit;
 }
 
