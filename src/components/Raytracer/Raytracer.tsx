@@ -37,8 +37,9 @@ export function Raytracer() {
   };
 
   return (
-    <div className='absolute inset-0 flex flex-col sm:flex-row'>
-      <div className='flex flex-1 flex-col gap-2 p-4 sm:max-w-xs'>
+    <div className='absolute inset-0 flex flex-row'>
+      <Canvas ref={canvasRef} />
+      <div className='relative flex max-w-xs flex-1 flex-col gap-2 bg-black/50 p-4'>
         <div className='flex flex-1 flex-col gap-2'>
           <h1 className='text-2xl underline'>WebGPU raytracer</h1>
           <StatWebGPUSupport supported={webGPUSupported} />
@@ -47,9 +48,6 @@ export function Raytracer() {
         <Button disabled={!webGPUSupported} onClick={toggleRun}>
           {running ? 'Stop' : 'Run'}
         </Button>
-      </div>
-      <div className='relative flex-1 border-zinc-500 max-sm:border-t sm:border-l'>
-        <Canvas ref={canvasRef} />
       </div>
     </div>
   );
