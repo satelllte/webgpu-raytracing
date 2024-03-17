@@ -57,7 +57,6 @@ fn color_pixel_simultaneous_samples(uv: vec2f, camera_ray: Ray) -> ColorRGB
  * TODO: 
  * (1) Fix the light going through spheres and lighting up the ones that stay behind,
  * instead of having shadows on them.
- * (2) Implement randomness in a better way to simulate roughness better.
  */
 fn color_pixel(uv: vec2f, camera_ray: Ray) -> ColorRGB
 {
