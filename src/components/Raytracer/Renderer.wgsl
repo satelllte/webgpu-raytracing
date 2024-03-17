@@ -18,8 +18,8 @@ fn fragment_main(@builtin(position) position: vec4f) -> @location(0) ColorRGBA
   let height = dimensions.height;
   let aspect_ratio = width / height;
   let uv = position.xy / vec2f(width, height);
-  let camera_uv = (2.0 * uv - vec2f(1.0)) * vec2f(aspect_ratio, -1.0); // mapping `uv` from y-down (normalized) viewport coordinates to camera coordinates
   let seed_xy = uv;
+  let camera_uv = (2.0 * uv - vec2f(1.0)) * vec2f(aspect_ratio, -1.0); // mapping `uv` from y-down (normalized) viewport coordinates to camera coordinates
   let camera_focus_distance = 1.0;
   let camera_origin = vec3f(0.0, 0.0, 0.0);
   let camera_ray = Ray(
