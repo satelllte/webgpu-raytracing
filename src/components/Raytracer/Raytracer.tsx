@@ -29,7 +29,10 @@ export function Raytracer() {
     if (!variables) throw new Error('variables ref is not set');
 
     const {settings, light, skyColor, materials, spheres} = variables;
-    renderer.setSettings(settings);
+    renderer.setSettings({
+      ...settings,
+      seed: settings.seedAuto ? timeMs : settings.seed,
+    });
     renderer.setLight(light);
     renderer.setSkyColor(skyColor);
     renderer.setMaterials(materials);

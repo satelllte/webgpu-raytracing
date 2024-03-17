@@ -10,7 +10,7 @@ import {useEffect} from 'react';
 import {hexToRgb01} from './utils';
 
 export type Variables = {
-  settings: Settings;
+  settings: Settings & {seedAuto: boolean};
   light: Light;
   skyColor: ColorRGB;
   materials: Material[];
@@ -26,6 +26,7 @@ export function Controls({
     Settings: folder({
       bounces: {label: 'Bounces', value: 4, min: 0, step: 1},
       seed: {label: 'Seed', value: 1.112, step: 0.0001},
+      seedAuto: {label: 'Seed auto', value: false},
     }),
     Light: folder({
       lightPosition: {...positionCommonProps, value: [-4.8, 5.5, 0.0]},
@@ -70,6 +71,7 @@ export function Controls({
     const {
       bounces,
       seed,
+      seedAuto,
       lightPosition,
       skyColor,
       material0Albedo,
@@ -93,6 +95,7 @@ export function Controls({
       settings: {
         bounces,
         seed,
+        seedAuto,
       },
       light: {position: lightPosition},
       skyColor: hexToRgb01(skyColor),
