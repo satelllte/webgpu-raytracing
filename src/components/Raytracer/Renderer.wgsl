@@ -1,5 +1,5 @@
 @group(0) @binding(0) var<uniform> dimensions: Dimensions;
-@group(0) @binding(1) var<uniform> bounces: u32;
+@group(0) @binding(1) var<uniform> settings: Settings;
 @group(0) @binding(2) var<uniform> light: Light;
 @group(0) @binding(3) var<uniform> sky_color: ColorRGB;
 @group(0) @binding(4) var<storage> materials: array<Material>;
@@ -35,6 +35,7 @@ alias ColorRGB = vec3f;
 alias ColorRGBA = vec4f;
 
 struct Dimensions { width: f32, height: f32 }
+struct Settings { bounces: f32, seed: f32 }
 struct Light { position: vec3f }
 struct Material { albedo: ColorRGB, roughness: f32 }
 struct Sphere { position: vec3f, radius: f32, material_index: f32 }
@@ -53,6 +54,7 @@ fn color(uv: vec2f, camera_ray: Ray) -> ColorRGB
   var color = ColorRGB(0.0);
   var multiplier = 1.0;
 
+  let bounces = u32(settings.bounces);
   for (var i: u32 = 0; i < bounces; i++) {
     let hit = trace_ray(ray);
     if (hit.distance < 0.0 || hit.index < 0) {
@@ -66,7 +68,7 @@ fn color(uv: vec2f, camera_ray: Ray) -> ColorRGB
     let material = materials[u32(sphere.material_index)];
     color += material.albedo * light_intensity * multiplier;
     multiplier *= 0.7;
-    ray.direction = normalize(reflect(ray.direction, hit.normal) + vec3f(rand22(uv * 1.1), rand22(uv * 1.2), rand22(uv * 1.3)) * material.roughness);
+    ray.direction = normalize(reflect(ray.direction, hit.normal) + randVec3(uv) * material.roughness);
     ray.origin = hit.position + ray.direction * 0.001;
   }
 
@@ -117,6 +119,12 @@ fn no_hit() -> RayHit
 fn ray_position(ray: Ray, distance: f32) -> vec3f
 {
   return ray.origin + distance * ray.direction;
+}
+
+fn randVec3(uv: vec2f) -> vec3f
+{
+  let seed = settings.seed;
+  return vec3f(rand22(uv * seed * 1.1), rand22(uv * seed * 1.2), rand22(uv * seed * 1.3));
 }
 
 fn rand22(n: vec2f) -> f32

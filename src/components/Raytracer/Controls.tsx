@@ -1,5 +1,6 @@
 import {useControls, folder} from 'leva';
 import {
+  type Settings,
   type ColorRGB,
   type Light,
   type Material,
@@ -9,7 +10,7 @@ import {useEffect} from 'react';
 import {hexToRgb01} from './utils';
 
 export type Variables = {
-  bounces: number;
+  settings: Settings;
   light: Light;
   skyColor: ColorRGB;
   materials: Material[];
@@ -22,8 +23,9 @@ export function Controls({
   readonly variablesRef: React.MutableRefObject<Variables | undefined>;
 }) {
   const controls = useControls({
-    Bounces: folder({
-      bounces: {label: 'Count', value: 4, min: 0, step: 1},
+    Settings: folder({
+      bounces: {label: 'Bounces', value: 4, min: 0, step: 1},
+      seed: {label: 'Seed', value: 1.112, step: 0.0001},
     }),
     Light: folder({
       lightPosition: {...positionCommonProps, value: [-4.8, 5.5, 0.0]},
@@ -67,6 +69,7 @@ export function Controls({
   useEffect(() => {
     const {
       bounces,
+      seed,
       lightPosition,
       skyColor,
       material0Albedo,
@@ -87,7 +90,10 @@ export function Controls({
     } = controls;
 
     variablesRef.current = {
-      bounces,
+      settings: {
+        bounces,
+        seed,
+      },
       light: {position: lightPosition},
       skyColor: hexToRgb01(skyColor),
       materials: [

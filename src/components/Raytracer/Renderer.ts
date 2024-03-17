@@ -23,7 +23,7 @@ export class Renderer {
   private _device: GPUDevice | undefined;
   private _preferredCanvasFormat: GPUTextureFormat | undefined;
 
-  private _bounces = 1;
+  private _settings: Settings | undefined;
   private _light: Light | undefined;
   private _skyColor: ColorRGB | undefined;
   private _materials: Material[] = [];
@@ -51,12 +51,15 @@ export class Renderer {
     this._preferredCanvasFormat = undefined;
   }
 
-  public setBounces(bounces: number): void {
-    this._bounces = bounces;
+  public setSettings(settings: Settings): void {
+    this._settings = settings;
   }
 
-  private get _bouncesData(): Uint32Array {
-    return new Uint32Array([this._bounces]);
+  private get _settingsData(): Float32Array {
+    return new Float32Array([
+      this._settings ? this._settings.bounces : 0, /// bounces: f32 || TODO: figure out how to pass u32 properly instead
+      this._settings ? this._settings.seed : 0.1, /// seed: f32
+    ]);
   }
 
   public setLight(light: Light): void {
@@ -201,10 +204,10 @@ export class Renderer {
       usage: usageUniform,
     });
 
-    const bouncesData = this._bouncesData;
-    const bouncesBuffer = device.createBuffer({
-      label: 'bounces buffer',
-      size: bouncesData.byteLength,
+    const settingsData = this._settingsData;
+    const settingsBuffer = device.createBuffer({
+      label: 'settings buffer',
+      size: settingsData.byteLength,
       usage: usageUniform,
     });
 
@@ -241,7 +244,7 @@ export class Renderer {
       layout: renderPipeline.getBindGroupLayout(0),
       entries: [
         {binding: 0, resource: {buffer: dimensionsBuffer}},
-        {binding: 1, resource: {buffer: bouncesBuffer}},
+        {binding: 1, resource: {buffer: settingsBuffer}},
         {binding: 2, resource: {buffer: lightBuffer}},
         {binding: 3, resource: {buffer: skyColorBuffer}},
         {binding: 4, resource: {buffer: materialsBuffer}},
@@ -272,7 +275,7 @@ export class Renderer {
 
     device.queue.writeBuffer(verticesBuffer, 0, verticesData);
     device.queue.writeBuffer(dimensionsBuffer, 0, dimensionsData);
-    device.queue.writeBuffer(bouncesBuffer, 0, bouncesData);
+    device.queue.writeBuffer(settingsBuffer, 0, settingsData);
     device.queue.writeBuffer(lightBuffer, 0, lightData);
     device.queue.writeBuffer(skyColorBuffer, 0, skyColorData);
     device.queue.writeBuffer(materialsBuffer, 0, materialsData);
@@ -284,6 +287,7 @@ export class Renderer {
 
 export type Vector3 = [number, number, number];
 export type ColorRGB = Vector3;
+export type Settings = {bounces: number; seed: number};
 export type Light = {position: Vector3};
 export type Material = {albedo: ColorRGB; roughness: number};
 export type Sphere = {position: Vector3; radius: number; materialIndex: number};
