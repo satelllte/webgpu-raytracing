@@ -82,9 +82,8 @@ fn hit_sphere(sphere: Sphere, ray: Ray) -> RayHit
   if (d < 0.0) { return no_hit(); }
 
   let sqrt_d = sqrt(d);
-  let recip_a = 1.0 / a;
-  let t1 = (-b - sqrt_d) * recip_a;
-  let t2 = (-b + sqrt_d) * recip_a;
+  let t1 = (-b - sqrt_d) / a;
+  let t2 = (-b + sqrt_d) / a;
   let t = select(t2, t1, t1 > 0.0);
   if (t <= 0.0) { return no_hit(); }
 
