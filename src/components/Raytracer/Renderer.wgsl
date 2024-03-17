@@ -1,10 +1,9 @@
-// const PI = 3.14159265358979;
-
-struct Uniforms {
-  width: u32,
-  height: u32,
-}
-@group(0) @binding(0) var<uniform> uniforms: Uniforms;
+@group(0) @binding(0) var<uniform> dimensions: Dimensions;
+@group(0) @binding(1) var<uniform> settings: Settings;
+@group(0) @binding(2) var<uniform> light: Light;
+@group(0) @binding(3) var<uniform> sky_color: ColorRGB;
+@group(0) @binding(4) var<storage> materials: array<Material>;
+@group(0) @binding(5) var<storage> spheres: array<Sphere>;
 
 @vertex
 fn vertex_main(@location(0) position: vec4f) -> @builtin(position) vec4f
@@ -15,165 +14,131 @@ fn vertex_main(@location(0) position: vec4f) -> @builtin(position) vec4f
 @fragment
 fn fragment_main(@builtin(position) position: vec4f) -> @location(0) ColorRGBA
 {
-  let width = f32(uniforms.width);
-  let height = f32(uniforms.height);
+  let width = dimensions.width;
+  let height = dimensions.height;
   let aspect_ratio = width / height;
-  
-  var uv = position.xy / vec2f(width, height);
-  uv = (2.0 * uv - vec2f(1.0)) * vec2f(aspect_ratio, -1.0); // mapping `uv` from y-down (normalized) viewport coordinates to camera coordinates
-
-  // let camera_field_of_view_degrees = 75.0;
-  // let camera_field_of_view_radians = camera_field_of_view_degrees * PI / 180.0;
+  let uv = position.xy / vec2f(width, height);
+  let seed_xy = uv;
+  let camera_uv = (2.0 * uv - vec2f(1.0)) * vec2f(aspect_ratio, -1.0); // mapping `uv` from y-down (normalized) viewport coordinates to camera coordinates
   let camera_focus_distance = 1.0;
   let camera_origin = vec3f(0.0, 0.0, 0.0);
-  let ray = Ray(
+  let camera_ray = Ray(
     /* origin */camera_origin,
     /* direction */normalize(vec3f(
-      uv,
-      // (2.0 * (uv.x + 0.5) / width  - 1.0) * tan(camera_field_of_view_radians * 0.5) * aspect_ratio,
-      // (2.0 * (uv.y + 0.5) / height - 1.0) * tan(camera_field_of_view_radians * 0.5),
+      camera_uv,
       -camera_focus_distance, // camera is looking into -z direction following a common right-handed coordinate system convention
     )),
   );
-
-  let rgb = trace_ray(ray, lights, spheres);
-
-  return ColorRGBA(rgb, 1.0);
+  return ColorRGBA(color_pixel_simultaneous_samples(seed_xy, camera_ray), 1.0);
 }
 
 alias ColorRGB = vec3f;
 alias ColorRGBA = vec4f;
 
-struct Ray {
-  origin: vec3f,
-  direction: vec3f, // must be normalized
-}
+struct Dimensions { width: f32, height: f32 }
+struct Settings { bounces: f32, samples_per_frame: f32, seed: f32 }
+struct Light { position: vec3f }
+struct Material { albedo: ColorRGB, roughness: f32 }
+struct Sphere { position: vec3f, radius: f32, material_index: f32 }
+struct Ray { origin: vec3f, direction: vec3f }
+struct RayHit { position: vec3f, normal: vec3f, distance: f32, index: i32 }
 
-struct RayHit {
-  position: vec3f,
-  normal: vec3f,
-  t: f32, // no hit when less than 0
-}
-
-struct Material {
-  diffuse_color: ColorRGB,
-  albedo: vec2f,
-  specular_exponent: f32,
-}
-
-struct Light {
-  position: vec3f,
-  intensity: f32,
-}
-
-struct Sphere {
-  center: vec3f,
-  radius: f32,
-  material: Material,
-}
-
-struct SphereHit {
-  index: i32,
-  hit: RayHit,
-}
-
-const material_red = Material(/* diffuse_color */ColorRGB(0.7, 0.1, 0.2), /* albedo */vec2f(1.0, 0.7), /* specular_exponent */50.0);
-const material_blue = Material(/* diffuse_color */ColorRGB(0.2, 0.1, 0.8), /* albedo */vec2f(1.0, 0.2), /* specular_exponent */10.0);
-const material_pink = Material(/* diffuse_color */ColorRGB(0.9, 0.3, 0.8), /* albedo */vec2f(1.0, 0.9), /* specular_exponent */20.0);
-
-const lights_count = 2;
-const lights = array<Light, lights_count>(
-  Light(/* position */vec3f(4.0, 2.0, -3.0), /* intensity */1.0),
-  Light(/* position */vec3f(4.0, -2.0, 3.0), /* intensity */0.22),
-);
-
-const spheres_count = 4;
-const spheres = array<Sphere, spheres_count>(
-  Sphere(/* center */vec3f(0.0, 0.0, -6.0), /* radius */1.0, /* material */material_red),
-  Sphere(/* center */vec3f(-1.25, 0.4, -4.0), /* radius */1.0, /* material */material_red),
-  Sphere(/* center */vec3f(-3.0, 2.0, -5.0), /* radius */2.0, /* material */material_blue),
-  Sphere(/* center */vec3f(3.0, 2.0, -5.0), /* radius */0.5, /* material */material_pink),
-);
-
-fn trace_ray(
-  ray: Ray,
-  lights: array<Light, lights_count>,
-  spheres: array<Sphere, spheres_count>,
-) -> ColorRGB
+fn color_pixel_simultaneous_samples(seed_xy: vec2f, camera_ray: Ray) -> ColorRGB
 {
-  let sphere_hit = hit_spheres(spheres, ray);
-  if (sphere_hit.index < 0) {
-    return color_sky(ray);
+  let samples_per_frame = settings.samples_per_frame;
+  let fraction = 1.0 / samples_per_frame;
+  var color = ColorRGB(0.0);
+  for (var i: u32 = 0; i < u32(samples_per_frame); i++) {
+    color += color_pixel(seed_xy * f32(i + 1) * 0.01, camera_ray) * fraction;
   }
+  return color;
+}
 
-  let sphere = spheres[sphere_hit.index];
-  let hit = sphere_hit.hit;
-  let material = sphere.material;
-  var diffuse_light_intensity: f32 = 0.0;
-  var specular_light_intensity: f32 = 0.0;
-  for (var i: i32 = 0; i < lights_count; i++) {
-    let light = lights[i];
+/**
+ * TODO: 
+ * (1) Fix the light going through spheres and lighting up the ones that stay behind,
+ * instead of having shadows on them.
+ */
+fn color_pixel(seed_xy: vec2f, camera_ray: Ray) -> ColorRGB
+{
+  var ray = camera_ray;
+  var color = ColorRGB(0.0);
+  var multiplier = 1.0;
+
+  let bounces = u32(settings.bounces);
+  for (var i: u32 = 0; i < bounces; i++) {
+    let hit = trace_ray(ray);
+    if (hit.distance < 0.0 || hit.index < 0) {
+      color += multiplier * sky_color;
+      break;
+    }
+
     let light_direction = normalize(light.position - hit.position);
-    let light_distance = distance(light.position, hit.position);
-    let shadow_origin = select(hit.position + hit.normal * 0.00001, hit.position - hit.normal * 0.00001, dot(light_direction, hit.normal) < 0);
-    let shadow_hit = hit_spheres(spheres, Ray(shadow_origin, light_direction));
-    if (shadow_hit.index >= 0 && distance(shadow_hit.hit.position, shadow_origin) < light_distance) {
-      continue;
-    }
-
-    diffuse_light_intensity += light.intensity * max(0.0, dot(light_direction, hit.normal));
-    specular_light_intensity += pow(max(0.0, dot(reflect(light_direction, hit.normal), ray.direction)), material.specular_exponent) * light.intensity;
-  }
-  return material.diffuse_color * diffuse_light_intensity * material.albedo[0] + vec3f(1.0) * specular_light_intensity * material.albedo[1];
-}
-
-fn hit_spheres(spheres: array<Sphere, spheres_count>, ray: Ray) -> SphereHit
-{
-  var sphere_hit = SphereHit(/* index */-1, /* hit */no_hit());
-
-  for (var i: i32 = 0; i < spheres_count; i++) {
-    let sphere = spheres[i];
-    let hit = hit_sphere(sphere, ray);
-    if (hit.t > 0.0 && (hit.t < sphere_hit.hit.t || sphere_hit.index < 0)) {
-      sphere_hit = SphereHit(i, hit);
-    }
+    let light_intensity = max(dot(light_direction, hit.normal), 0.0);
+    let sphere = spheres[hit.index];
+    let material = materials[u32(sphere.material_index)];
+    color += material.albedo * light_intensity * multiplier;
+    multiplier *= 0.7;
+    ray.direction = normalize(reflect(ray.direction, hit.normal) + rand_vec3(seed_xy) * material.roughness);
+    ray.origin = hit.position + ray.direction * 0.001;
   }
 
-  return sphere_hit;
+  return color;
 }
 
-fn hit_sphere(sphere: Sphere, ray: Ray) -> RayHit
+fn trace_ray(ray: Ray) -> RayHit
 {
-  let v = ray.origin - sphere.center;
+  var closest_hit = no_hit();
+  let spheres_count = i32(arrayLength(&spheres));
+  for (var index: i32 = 0; index < spheres_count; index++) {
+    let hit = hit_sphere(index, ray);
+    if (hit.distance <= 0.0) { continue; }
+    if (closest_hit.distance >= 0 && closest_hit.distance < hit.distance) { continue; }
+    closest_hit = hit;
+  }
+  return closest_hit;
+}
+
+fn hit_sphere(index: i32, ray: Ray) -> RayHit
+{
+  let sphere = spheres[index];
+  if (sphere.radius <= 0.0) { return no_hit(); }
+
+  let v = ray.origin - sphere.position;
   let a = dot(ray.direction, ray.direction);
   let b = dot(v, ray.direction);
   let c = dot(v, v) - sphere.radius * sphere.radius;
-  let d = b * b - a * c;
-  if (d < 0.0) { return no_hit(); }
+  let discriminant = b * b - a * c;
+  if (discriminant < 0.0) { return no_hit(); }
 
-  let sqrt_d = sqrt(d);
-  let recip_a = 1.0 / a;
-  let mb = -b;
-  let t1 = (mb - sqrt_d) * recip_a;
-  let t2 = (mb + sqrt_d) * recip_a;
-  let t = select(t2, t1, t1 > 0.0);
-  if (t <= 0.0) { return no_hit(); }
+  let discriminant_sqrt = sqrt(discriminant);
+  let t1 = (-b - discriminant_sqrt) / a;
+  let t2 = (-b + discriminant_sqrt) / a;
+  let distance = select(t2, t1, t1 > 0.0);
+  if (distance <= 0.0) { return no_hit(); }
 
-  let position = ray_position(ray, t);
-  let normal = normalize((position - sphere.center) / sphere.radius);
-  return RayHit(position, normal, t);
+  let position = ray_position(ray, distance);
+  let normal = normalize((position - sphere.position) / sphere.radius);
+  return RayHit(position, normal, distance, index);
 }
 
-fn no_hit() -> RayHit {
-  return RayHit(/* position */vec3f(0.0), /* normal */vec3f(0.0), /* t */-1.0);
-}
-
-fn ray_position(ray: Ray, t: f32) -> vec3f {
-  return ray.origin + t * ray.direction;
-}
-
-fn color_sky(ray: Ray) -> ColorRGB
+fn no_hit() -> RayHit
 {
-  let t = 0.5 * (ray.direction.y + 1.0);
-  return (1.0 - t) * ColorRGB(0.0, 0.3, 0.4) + t * ColorRGB(0.0, 0.01, 0.1);
+  return RayHit(/* position */vec3f(0.0), /* normal */vec3f(0.0), /* distance */-1.0, /* index */-1);
+}
+
+fn ray_position(ray: Ray, distance: f32) -> vec3f
+{
+  return ray.origin + distance * ray.direction;
+}
+
+fn rand_vec3(xy_seed: vec2f) -> vec3f
+{
+  let seed = settings.seed;
+  return vec3f(rand_xy(xy_seed * seed * 1.1), rand_xy(xy_seed * seed * 1.2), rand_xy(xy_seed * seed * 1.3));
+}
+
+fn rand_xy(xy_seed: vec2f) -> f32
+{
+  return fract(sin(dot(xy_seed, vec2f(12.9898, 4.1414))) * 43758.5453);
 }
