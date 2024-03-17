@@ -80,12 +80,12 @@ fn hit_sphere(sphere: Sphere, ray: Ray) -> RayHit
   let a = dot(ray.direction, ray.direction);
   let b = dot(v, ray.direction);
   let c = dot(v, v) - sphere.radius * sphere.radius;
-  let d = b * b - a * c;
-  if (d < 0.0) { return no_hit(); }
+  let discriminant = b * b - a * c;
+  if (discriminant < 0.0) { return no_hit(); }
 
-  let sqrt_d = sqrt(d);
-  let t1 = (-b - sqrt_d) / a;
-  let t2 = (-b + sqrt_d) / a;
+  let discriminant_sqrt = sqrt(discriminant);
+  let t1 = (-b - discriminant_sqrt) / a;
+  let t2 = (-b + discriminant_sqrt) / a;
   let distance = select(t2, t1, t1 > 0.0);
   if (distance <= 0.0) { return no_hit(); }
 
