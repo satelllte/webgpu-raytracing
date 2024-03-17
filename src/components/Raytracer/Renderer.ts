@@ -5,7 +5,7 @@ export class Renderer {
     return 'Renderer was not initialized properly';
   }
 
-  private static get _verticesData(): Float32Array {
+  private static get _vertexData(): Float32Array {
     // prettier-ignore
     return new Float32Array([
       /// position<vec4f> (xyzw)
@@ -189,10 +189,10 @@ export class Renderer {
     const usageUniform = GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST; // eslint-disable-line no-bitwise
     const usageStorage = GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST; // eslint-disable-line no-bitwise
 
-    const verticesData = Renderer._verticesData;
-    const verticesBuffer = device.createBuffer({
-      label: 'vertices buffer',
-      size: verticesData.byteLength,
+    const vertexData = Renderer._vertexData;
+    const vertexBuffer = device.createBuffer({
+      label: 'vertex buffer',
+      size: vertexData.byteLength,
       usage: usageVertex,
     });
 
@@ -270,12 +270,12 @@ export class Renderer {
     });
 
     passEncoder.setPipeline(renderPipeline);
-    passEncoder.setVertexBuffer(0, verticesBuffer);
+    passEncoder.setVertexBuffer(0, vertexBuffer);
     passEncoder.setBindGroup(0, uniformsBindGroup);
-    passEncoder.draw(verticesData.length / 4);
+    passEncoder.draw(vertexData.length / 4);
     passEncoder.end();
 
-    device.queue.writeBuffer(verticesBuffer, 0, verticesData);
+    device.queue.writeBuffer(vertexBuffer, 0, vertexData);
     device.queue.writeBuffer(dimensionsBuffer, 0, dimensionsData);
     device.queue.writeBuffer(settingsBuffer, 0, settingsData);
     device.queue.writeBuffer(lightBuffer, 0, lightData);
